@@ -10,7 +10,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
 
   stats-db:
-    image: postgres:17
+    image: postgres:16.1
     container_name: ewm-stat-db
     ports:
       - "6542:5432"
@@ -23,3 +23,5 @@ services:
     build: ./ewm-service
     ports:
       - "8080:8080"
+  ewm-db:
+    image: postgres:16.1
