@@ -38,7 +38,7 @@ public class StatsServiceImpl implements StatsService {
                 .app(newStat.getApp())
                 .uri(newStat.getUri())
                 .ip(newStat.getIp())
-                .timestamp(DataTimeMapper.toInstant(newStat.getTimestamp()))
+                .timestamp(newStat.getTimestamp())
                 .build();
         statsRepository.save(stat);
     }

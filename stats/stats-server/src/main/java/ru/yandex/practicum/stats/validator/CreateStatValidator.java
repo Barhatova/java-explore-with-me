@@ -21,7 +21,7 @@ public class CreateStatValidator extends AbstractValidator {
         if (request.getIp() == null || request.getIp().isBlank()) {
             validateResult.add("Не указан IP-адрес автора");
         }
-        if (request.getTimestamp() == null || request.getTimestamp().isBlank()) {
+        if (request.getTimestamp() == null) {
             validateResult.add("Не указаны дата и время совершения запроса");
         }
     }

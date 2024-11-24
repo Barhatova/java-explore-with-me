@@ -19,17 +19,17 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class StatsClient {
-    static final String STATS_SERVER = "${stats-server.url}";
+    String statsServer = "http://stats-server:9090";
     private final RestTemplate restTemplate;
 
-    public void createStat(ParamHitDto newStat) {
+    public void save(ParamHitDto newStat) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<ParamHitDto> requestEntity = new HttpEntity<>(newStat,httpHeaders);
-        restTemplate.exchange(STATS_SERVER + "/hit", HttpMethod.POST, requestEntity, ParamHitDto.class);
+        restTemplate.exchange(statsServer + "/hit", HttpMethod.POST, requestEntity, ParamHitDto.class);
     }
 
-    public ResponseEntity<List<StatDto>> getStat(String start, String end, String[]uris, boolean unique) {
+    public List<StatDto> getStat(String start, String end, List<String> uris, boolean unique) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<?> requestEntity = new HttpEntity<>(httpHeaders);
@@ -40,11 +40,10 @@ public class StatsClient {
                 "uris", uris,
                 "unique", unique);
 
-        String uri = STATS_SERVER + "/stats?start={start}&end={end}&uris={uris}&unique={unique}";
-
+        String uri = statsServer + "/stats?start={start}&end={end}&uris={uris}&unique={unique}";
         return restTemplate.exchange(uri, HttpMethod.GET, requestEntity,
                 new ParameterizedTypeReference<List<StatDto>>() {
                 },
-                uriVariables);
+                uriVariables).getBody();
     }
 }
