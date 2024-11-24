@@ -7,11 +7,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import ru.yandex.practicum.dto.ParamHitDto;
 import ru.yandex.practicum.dto.StatDto;
+
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +25,7 @@ public class StatsClient {
     public void save(ParamHitDto newStat) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<ParamHitDto> requestEntity = new HttpEntity<>(newStat,httpHeaders);
+        HttpEntity<ParamHitDto> requestEntity = new HttpEntity<>(newStat, httpHeaders);
         restTemplate.exchange(statsServer + "/hit", HttpMethod.POST, requestEntity, ParamHitDto.class);
     }
 
