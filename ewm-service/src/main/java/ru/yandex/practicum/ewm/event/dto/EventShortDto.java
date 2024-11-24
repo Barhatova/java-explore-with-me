@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 
 import static ru.yandex.practicum.ewm.constant.Constants.DATE_FORMAT;
 
-
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)

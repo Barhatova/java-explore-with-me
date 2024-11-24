@@ -3,7 +3,6 @@ package ru.yandex.practicum.ewm.event.dto;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.Value;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
