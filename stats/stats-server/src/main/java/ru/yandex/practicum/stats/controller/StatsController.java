@@ -39,6 +39,6 @@ public class StatsController {
                                  @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
                                   @RequestParam(value = "uris", required = false) List<String> uris,
                                   @RequestParam(defaultValue = "false") boolean unique) {
-        return statsService.getStat(start, end,uris, unique);
+        return statsService.getStat(start, end, uris, unique);
     }
 }
