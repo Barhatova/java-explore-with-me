@@ -1,14 +1,11 @@
 package ru.yandex.practicum.ewm.event.model;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.Embeddable;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
-@AllArgsConstructor
+@Embeddable
+@Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Location {
     Float lat;

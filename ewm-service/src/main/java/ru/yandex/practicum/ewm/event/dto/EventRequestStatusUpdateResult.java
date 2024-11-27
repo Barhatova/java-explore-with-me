@@ -1,16 +1,15 @@
-package ru.yandex.practicum.ewm.request.dto;
+package ru.yandex.practicum.ewm.event.dto;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.ewm.request.dto.ParticipationRequestDto;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventRequestStatusUpdateResult {
     List<ParticipationRequestDto> confirmedRequests;

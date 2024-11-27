@@ -20,7 +20,8 @@ public class ParamHitDto {
     String app;
     String uri;
     String ip;
+
     @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime timestamp;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    LocalDateTime timestamp;
 }

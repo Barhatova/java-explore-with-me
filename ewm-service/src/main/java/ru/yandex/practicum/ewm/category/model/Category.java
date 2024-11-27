@@ -9,19 +9,17 @@ import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
-@Builder
 @Entity
+@Table(name = "categories")
+@Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "categories")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "category_id")
     Long id;
-    @Column(name = "category_name")
+    @Column(nullable = false, unique = true, length = 50)
     String name;
 }

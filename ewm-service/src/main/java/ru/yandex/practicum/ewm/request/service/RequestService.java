@@ -5,9 +5,9 @@ import ru.yandex.practicum.ewm.request.dto.ParticipationRequestDto;
 import java.util.List;
 
 public interface RequestService {
-    ParticipationRequestDto createRequestPrivate(Long userId, Long eventId);
+    List<ParticipationRequestDto> getRequests(Long userId);
 
-    List<ParticipationRequestDto> getRequestsPrivate(Long userId);
+    ParticipationRequestDto create(Long userId, Long eventId);
 
-    ParticipationRequestDto cancelRequest(Long userId, Long requestId);
+    ParticipationRequestDto cancel(Long userId, Long requestId);
 }

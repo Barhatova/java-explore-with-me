@@ -2,6 +2,10 @@ server :
   port: 8080
 spring:
   application.name: ewm-service
+  spring:
+    jpa:
+      hibernate:
+        ddl-auto=create-drop:
   main.banner-mode: OFF
   sql:
     init:

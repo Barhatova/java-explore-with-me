@@ -2,18 +2,20 @@ package ru.yandex.practicum.ewm.compilation.dto;
 
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.validator.constraints.UniqueElements;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UpdateCompilationRequest {
     @Size(min = 1, max = 50)
     String title;
-    Boolean pinned;
+    @UniqueElements
     List<Long> events;
+    Boolean pinned;
 }

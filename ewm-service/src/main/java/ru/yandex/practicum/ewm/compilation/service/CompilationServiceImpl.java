@@ -1,130 +1,173 @@
 package ru.yandex.practicum.ewm.compilation.service;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.client.StatsClient;
-import ru.yandex.practicum.dto.StatDto;
 import ru.yandex.practicum.ewm.compilation.dto.CompilationDto;
 import ru.yandex.practicum.ewm.compilation.dto.NewCompilationDto;
 import ru.yandex.practicum.ewm.compilation.dto.UpdateCompilationRequest;
 import ru.yandex.practicum.ewm.compilation.mapper.CompilationMapper;
 import ru.yandex.practicum.ewm.compilation.model.Compilation;
 import ru.yandex.practicum.ewm.compilation.repository.CompilationRepository;
+import ru.yandex.practicum.ewm.event.dto.EventShortDto;
+import ru.yandex.practicum.ewm.event.mapper.EventMapper;
 import ru.yandex.practicum.ewm.event.model.Event;
 import ru.yandex.practicum.ewm.event.repository.EventRepository;
-import ru.yandex.practicum.ewm.exception.ObjectNotFoundException;
+import ru.yandex.practicum.ewm.exception.NotFoundException;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
-import static ru.yandex.practicum.ewm.constant.Constants.DATE_FORMAT;
+import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeClass;
+import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeMethod;
 
-@Slf4j
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CompilationServiceImpl implements CompilationService {
-    final EventRepository eventRepository;
-    final CompilationRepository compilationRepository;
-    final CompilationMapper compilationMapper;
-    final StatsClient client;
+    private final CompilationRepository compilationRepository;
+    private final EventRepository eventRepository;
+    private final CompilationMapper compilationMapper;
+    private final EventMapper eventMapper;
+
+    @Override
+    public List<CompilationDto> getCompilations(Boolean pinned, int from, int size) {
+        log.info("{}: Starting execution of {} method.", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
+
+        Pageable pageable = PageRequest.of(from / size, size);
+        List<Compilation> compilations;
+
+        if (pinned != null) {
+            log.info("{}.{}: Fetching compilations with pinned status: pinned={}", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"), pinned);
+            compilations = compilationRepository.findAllByPinned(pinned, pageable).getContent();
+        } else {
+            log.info("{}.{}: Fetching all compilations.", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
+            compilations = compilationRepository.findAll(pageable).getContent();
+        }
+
+        if (compilations.isEmpty()) {
+            log.info("{}.{}: No compilations found. Returning an empty list.", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
+            return List.of();
+        }
+
+        log.info("{}.{}: Mapping compilation to CompilationDto", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
+        List<CompilationDto> compilationDtos = compilations.stream()
+                .map(compilation -> {
+                    log.info("{}.{}: Mapping event to EventShortDto", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
+                    List<EventShortDto> eventShortDtos = compilation.getEvents().stream().map(eventMapper::toEventShortDtoFromEvent).toList();
+                    return compilationMapper.toCompilationDtoFromCompilation(compilation, eventShortDtos);
+                })
+                .toList();
+
+        log.info("{}.{}: Successfully fetched {} compilation.", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"), compilationDtos.size());
+        return compilationDtos;
+    }
+
+    @Override
+    public CompilationDto getCompilationById(Long compId) {
+        log.info("{}: Starting execution of {} method.", colorizeClass("CompilationService"), colorizeMethod("getCompilationById()"));
+        log.info("{}.{}: Fetching compilation with id={}.", colorizeClass("CompilationService"), colorizeMethod("getCompilationById()"), compId);
+        Compilation compilation = compilationRepository.findById(compId)
+                .orElseThrow(() -> new NotFoundException(String.format("Compilation with id=%d not found", compId)));
+
+        log.info("{}.{}: Mapping event to EventShortDto", colorizeClass("CompilationService"), colorizeMethod("getCompilationById()"));
+        List<EventShortDto> eventShortDtos = compilation.getEvents().stream().map(eventMapper::toEventShortDtoFromEvent).toList();
+
+        log.info("{}.{}: Mapping compilations to CompilationDto", colorizeClass("CompilationService"), colorizeMethod("getCompilationById()"));
+        CompilationDto compilationDto = compilationMapper.toCompilationDtoFromCompilation(compilation, eventShortDtos);
+
+        log.info("{}.{}: Successfully fetched compilation with id={}.", colorizeClass("CompilationService"), colorizeMethod("getCompilationById()"), compId);
+        return compilationDto;
+    }
+
 
     @Override
     @Transactional
-    public CompilationDto createCompilationAdmin(NewCompilationDto newCompilationDto) {
-        Compilation compilation = new Compilation();
-        compilation.setTitle(newCompilationDto.getTitle());
+    public CompilationDto create(NewCompilationDto newCompilationDto) {
+        log.info("{}: Starting execution of {} method.", colorizeClass("CompilationService"), colorizeMethod("create()"));
+        Set<Event> events = new HashSet<>();
+
         if (newCompilationDto.getEvents() != null) {
-            List<Event> events = eventRepository.getAllByIdIn(newCompilationDto.getEvents());
-            compilation.setEvents(events);
-        } else {
-            compilation.setEvents(new ArrayList<>());
+            log.info("{}.{}: Fetching events by ids={}.", colorizeClass("CompilationService"), colorizeMethod("create()"), newCompilationDto.getEvents());
+            events.addAll(eventRepository.findAllById(newCompilationDto.getEvents()));
         }
-        if (newCompilationDto.getPinned() == null) {
-            compilation.setPinned(false);
-        } else {
-            compilation.setPinned(newCompilationDto.getPinned());
-        }
-        compilationRepository.save(compilation);
-        return compilationMapper.toDto(compilation, 0L);
+
+        log.info("{}.{}: Mapping newCompilationDto to Compilation.", colorizeClass("CompilationService"), colorizeMethod("create()"));
+        Compilation compilation = compilationMapper.toCompilationFromNewCompilationDto(newCompilationDto, events);
+
+        log.info("{}.{}: Saving compilation to database.", colorizeClass("CompilationService"), colorizeMethod("create()"));
+        compilation = compilationRepository.save(compilation);
+
+        log.info("{}.{}: Mapping event to EventShortDto", colorizeClass("CompilationService"), colorizeMethod("create()"));
+        List<EventShortDto> eventShortDtos = compilation.getEvents().stream().map(eventMapper::toEventShortDtoFromEvent).toList();
+
+        log.info("{}.{}: Mapping compilations to CompilationDto", colorizeClass("CompilationService"), colorizeMethod("create()"));
+        CompilationDto compilationDto = compilationMapper.toCompilationDtoFromCompilation(compilation, eventShortDtos);
+
+        log.info("{}.{}: Successfully created compilation with id={}", colorizeClass("CompilationService"), colorizeMethod("create()"), compilation.getId());
+        return compilationDto;
     }
 
     @Override
     @Transactional
-    public CompilationDto updateCompilationAdmin(Long compilationId, UpdateCompilationRequest updateCompilationRequest) {
-        Compilation compilation = getCompilationOrThrow(compilationId);
-        if (updateCompilationRequest.getEvents() != null && !updateCompilationRequest.getEvents().isEmpty()) {
-            List<Event> events = eventRepository.getByIdIn(updateCompilationRequest.getEvents());
-            compilation.setEvents(events);
+    public void deleteById(Long compId) {
+        log.info("{}: Starting execution of {} method.", colorizeClass("CompilationService"), colorizeMethod("deleteById()"));
+
+        log.info("{}.{}: Checking if compilation exists with id={}.", colorizeClass("CompilationService"), colorizeMethod("deleteById()"), compId);
+        if (!compilationRepository.existsById(compId)) {
+            throw new NotFoundException(
+                    String.format("Compilation with id=%d not found", compId));
         }
+        log.info("{}.{}: Deleting compilation with id={}.", colorizeClass("CompilationService"), colorizeMethod("deleteById()"), compId);
+        compilationRepository.deleteById(compId);
+
+        log.info("{}.{}: Compilation with id={} deleted successfully.", colorizeClass("UserService"), colorizeMethod("deleteById()"), compId);
+    }
+
+    @Override
+    @Transactional
+    public CompilationDto update(Long compId, UpdateCompilationRequest updateCompilationRequest) {
+        log.info("{}: Starting execution of {} method.", colorizeClass("CompilationService"), colorizeMethod("update()"));
+
+        log.info("{}.{}: Fetching compilation with id={}.", colorizeClass("CompilationService"), colorizeMethod("update()"), compId);
+        Compilation compilation = compilationRepository.findById(compId)
+                .orElseThrow(() -> new NotFoundException(String.format("Compilation with id=%d not found", compId)));
+
+        log.info("{}.{}: Beginning updating the fields.", colorizeClass("CompilationService"), colorizeMethod("update()"));
+        StringBuilder updatedFieldsLog = new StringBuilder();
+
         if (updateCompilationRequest.getTitle() != null) {
             compilation.setTitle(updateCompilationRequest.getTitle());
-
+            updatedFieldsLog.append("Title|");
+        }
+        if (updateCompilationRequest.getEvents() != null) {
+            Set<Event> events = new HashSet<>(eventRepository.findAllById(updateCompilationRequest.getEvents()));
+            compilation.setEvents(events);
+            updatedFieldsLog.append("Events|");
         }
         if (updateCompilationRequest.getPinned() != null) {
             compilation.setPinned(updateCompilationRequest.getPinned());
+            updatedFieldsLog.append("Pinned|");
         }
-        compilationRepository.save(compilation);
-        Long view = getHitsEvent(compilationId, LocalDateTime.now().minusDays(100).format(DateTimeFormatter.ofPattern(DATE_FORMAT)),
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_FORMAT)), true);
-        return compilationMapper.toDto(compilation, view);
-    }
 
-    @Override
-    @Transactional
-    public void deleteCompilationAdmin(Long compilationId) {
-        if (compilationRepository.existsById(compilationId)) {
-            compilationRepository.deleteById(compilationId);
-            log.info(String.format("Собрание по id не найдено", compilationId));
-        }
-    }
+        String updatedFields = updatedFieldsLog.toString().replaceAll("\\|$", "").replace("|", ", ");
 
-    @Override
-    public List<CompilationDto> findCompilationsPublic(Boolean pinned, Pageable pageable) {
-        if (pinned == null) {
-            return compilationRepository.findAll(pageable).stream()
-                    .map(c -> compilationMapper.toDto(c, getHitsEvent(c.getId(),
-                            LocalDateTime.now().minusDays(100).format(DateTimeFormatter.ofPattern(DATE_FORMAT)),
-                            LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_FORMAT)), true)))
-                    .collect(Collectors.toList());
-        }
-        return compilationRepository.findAllByPinned(pinned, pageable).stream()
-                .map(c -> compilationMapper.toDto(c, getHitsEvent(c.getId(),
-                        LocalDateTime.now().minusDays(100).format(DateTimeFormatter.ofPattern(DATE_FORMAT)),
-                        LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_FORMAT)), true)))
-                .collect(Collectors.toList());
-    }
+        log.info("{}.{}: Updated fields: {}.", colorizeClass("CompilationService"), colorizeMethod("update()"), updatedFields);
 
-    @Override
-    public CompilationDto findCompilationPublic(Long compilationId) {
-        Compilation compilation = getCompilationOrThrow(compilationId);
-        return compilationMapper.toDto(compilation, getHitsEvent(compilationId,
-                LocalDateTime.now().minusDays(100).format(DateTimeFormatter.ofPattern(DATE_FORMAT)),
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_FORMAT)), true));
-    }
+        log.info("{}.{}: Saving updated compilation to database", colorizeClass("CompilationService"), colorizeMethod("update()"));
+        compilation = compilationRepository.save(compilation);
 
-    private Compilation getCompilationOrThrow(Long compilationId) {
-        return compilationRepository.findById(compilationId).orElseThrow(
-                () -> new ObjectNotFoundException(String.format("Собрание по id не найдено", compilationId)));
-    }
-
-    private Long getHitsEvent(Long eventId, String start, String end, Boolean unique) {
-        List<String> uris = new ArrayList<>();
-        uris.add("/events/" + eventId);
-        List<StatDto> output = client.getStat(start, end, uris, unique);
-        Long view = 0L;
-        if (!output.isEmpty()) {
-            view = output.get(0).getHits();
-        }
-        return view;
+        log.info("{}.{}: Mapping event to EventShortDto", colorizeClass("CompilationService"), colorizeMethod("update()"));
+        log.info("{}.{}: Mapping compilations to CompilationDto", colorizeClass("CompilationService"), colorizeMethod("update()"));
+        CompilationDto compilationDto = compilationMapper.toCompilationDtoFromCompilation(compilation, compilation.getEvents().stream()
+                .map(eventMapper::toEventShortDtoFromEvent)
+                .toList());
+        log.info("{}.{}: Successfully updated compilation with id={}", colorizeClass("CompilationService"), colorizeMethod("update()"), compId);
+        return compilationDto;
     }
 }

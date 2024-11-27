@@ -2,39 +2,56 @@ package ru.yandex.practicum.ewm.event.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Pageable;
-import ru.yandex.practicum.ewm.event.dto.EventAdminParam;
+import ru.yandex.practicum.ewm.event.dto.EventRequestStatusUpdateRequest;
 import ru.yandex.practicum.ewm.event.dto.EventFullDto;
+import ru.yandex.practicum.ewm.event.dto.EventRequestStatusUpdateResult;
 import ru.yandex.practicum.ewm.event.dto.EventShortDto;
-import ru.yandex.practicum.ewm.event.dto.EventUserParam;
 import ru.yandex.practicum.ewm.event.dto.NewEventDto;
 import ru.yandex.practicum.ewm.event.dto.UpdateEventAdminRequest;
 import ru.yandex.practicum.ewm.event.dto.UpdateEventUserRequest;
-import ru.yandex.practicum.ewm.request.dto.EventRequestStatusUpdateRequest;
-import ru.yandex.practicum.ewm.request.dto.EventRequestStatusUpdateResult;
+import ru.yandex.practicum.ewm.event.model.SortType;
+import ru.yandex.practicum.ewm.event.model.State;
 import ru.yandex.practicum.ewm.request.dto.ParticipationRequestDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventService {
+    List<EventShortDto> getEvents(String text,
+                                  List<Long> categories,
+                                  Boolean paid,
+                                  LocalDateTime rangeStart,
+                                  LocalDateTime rangeEnd,
+                                  Boolean onlyAvailable,
+                                  SortType sort,
+                                  Integer from,
+                                  Integer size,
+                                  HttpServletRequest request);
 
-    EventFullDto createEventPrivate(Long userId, NewEventDto newEventDto);
+    EventFullDto getEventById(Long eventId, HttpServletRequest request);
 
-    List<EventShortDto> getEventPrivate(Long userId, Pageable pageable);
+    List<EventFullDto> getFullEvents(List<Long> users,
+                                     List<State> states,
+                                     List<Long> categories,
+                                     LocalDateTime rangeStart,
+                                     LocalDateTime rangeEnd,
+                                     Integer from,
+                                     Integer size);
 
-    EventFullDto getEventByIdPrivate(Long userId, Long eventId);
+    EventFullDto updateByAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 
-    EventFullDto updateEventPrivate(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest);
+    List<EventShortDto> getEventsByCurrentUser(Long userId, int from, int size);
 
-    List<EventFullDto> getEventsAdmin(EventAdminParam eventAdminParam);
 
-    EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminRequest updateEventAdmin);
+    EventFullDto create(Long userId, NewEventDto newEventDto);
 
-    List<EventShortDto> getEventsPublic(EventUserParam eventUserParam, HttpServletRequest request);
+    EventFullDto getFullEventByIdForCurrentUser(Long userId, Long eventId);
 
-    EventFullDto getEventByIdPublic(Long id, HttpServletRequest request);
+    EventFullDto updateByCurrentUser(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest);
 
-    List<ParticipationRequestDto> getRequestsUserToEventPrivate(Long userId, Long eventId);
+    List<ParticipationRequestDto> getRequestsByCurrentUser(Long userId, Long eventId);
 
-    EventRequestStatusUpdateResult updateEventRequestStatusPrivate(Long userId, Long eventId, EventRequestStatusUpdateRequest updateRequests);
-
+    EventRequestStatusUpdateResult updateStatus(Long userId,
+                                                Long eventId,
+                                                EventRequestStatusUpdateRequest statusUpdateRequest);
 }

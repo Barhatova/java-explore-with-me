@@ -10,22 +10,18 @@ import jakarta.validation.constraints.Email;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
 @Entity
+@Table(name = "users")
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "users")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
     Long id;
-    @Email
-    @Column(name = "user_email")
-    String email;
-    @Column(name = "user_name")
     String name;
+    @Column(unique = true)
+    String email;
 }

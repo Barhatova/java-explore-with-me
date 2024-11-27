@@ -10,31 +10,33 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.ewm.event.model.Event;
 
 import java.util.List;
+import java.util.Set;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "compilations")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Compilation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "compilation_id")
     Long id;
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "compilation_event",
-            joinColumns = @JoinColumn(name = "compilation_id"),
-            inverseJoinColumns = @JoinColumn(name = "event_id"))
-    List<Event> events;
-    @Column(name = "pinned")
-    Boolean pinned;
-    @Column(name = "title")
+    @Column(nullable = false)
     String title;
+    @ManyToMany
+    @JoinTable(
+            name = "compilation_events",
+            joinColumns = @JoinColumn(name = "compilation_id"),
+            inverseJoinColumns = @JoinColumn(name = "event_id")
+    )
+    Set<Event> events;
+    @Column(nullable = false)
+    boolean pinned;
 }

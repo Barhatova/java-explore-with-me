@@ -13,6 +13,9 @@ import ru.yandex.practicum.stats.model.Stat;
 import ru.yandex.practicum.stats.repository.StatsRepository;
 import ru.yandex.practicum.stats.validator.CreateStatValidator;
 import ru.yandex.practicum.stats.validator.GetStatsValidator;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -72,23 +75,31 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
-    public List<StatDto> getStat(String startTime, String endTime, List<String> uris, boolean unique) {
+    public List<StatDto> getStat(LocalDateTime  startTime, LocalDateTime endTime, List<String> uris, boolean unique) {
+        List<String> urisList = new ArrayList<>();
         GetStatsValidator validator = new GetStatsValidator(new ParamDto(startTime,endTime));
         validator.validate();
         if (!validator.isValid()) {
             throw new ValidationException("Невалидные параметры", validator.getMessages());
         }
+
+        if (startTime.isAfter(endTime)) {
+            throw new ValidationException("Время начала должно быть раньше окончания");
+        }
         List<StatDto> statForOutput;
         List<Stat> stats;
         if (uris == null) {
-            stats = statsRepository.getStatByForThePeriod(DataTimeMapper.toInstant(startTime),
-                    DataTimeMapper.toInstant(endTime));
+            stats = statsRepository.getStatByForThePeriod(startTime, endTime);
         } else {
-            stats = statsRepository.getStatByUriForThePeriod(DataTimeMapper.toInstant(startTime),
-                    DataTimeMapper.toInstant(endTime),
-                    uris);
+            for (String uri : uris) {
+                if (uri.startsWith("[")) {
+                    urisList.add(uri.substring(1, uri.length() - 1));
+                } else
+                    urisList.add(uri);
+            }
+            stats = statsRepository.getStatByUriForThePeriod(startTime, endTime, urisList);
         }
-        statForOutput = this.groupStat(stats, unique);
+        statForOutput = groupStat(stats, unique);
         return statForOutput;
     }
 }

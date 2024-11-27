@@ -1,6 +1,6 @@
 package ru.yandex.practicum.ewm.event.model;
 
-public enum EventState {
+public enum State {
     PENDING,
     PUBLISHED,
     CANCELED

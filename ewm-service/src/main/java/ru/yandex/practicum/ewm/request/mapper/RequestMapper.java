@@ -2,18 +2,17 @@ package ru.yandex.practicum.ewm.request.mapper;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.ewm.request.dto.ParticipationRequestDto;
-import ru.yandex.practicum.ewm.request.model.Request;
+import ru.yandex.practicum.ewm.request.model.ParticipationRequest;
 
 @Component
 public class RequestMapper {
-
-    public ParticipationRequestDto toDto(Request request) {
-        ParticipationRequestDto participationRequestDto = new ParticipationRequestDto();
-        participationRequestDto.setId(request.getId());
-        participationRequestDto.setRequester(request.getRequester().getId());
-        participationRequestDto.setEvent(request.getEvent().getId());
-        participationRequestDto.setCreated(request.getCreated());
-        participationRequestDto.setStatus(String.valueOf(request.getStatus()));
-        return participationRequestDto;
+    public ParticipationRequestDto toParticipationRequestDto(ParticipationRequest participationRequest) {
+        return ParticipationRequestDto.builder()
+                .id(participationRequest.getId())
+                .created(participationRequest.getCreated())
+                .requester(participationRequest.getRequester().getId())
+                .status(participationRequest.getStatus())
+                .event(participationRequest.getEvent().getId())
+                .build();
     }
 }

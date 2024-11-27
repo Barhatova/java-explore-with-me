@@ -2,6 +2,7 @@ package ru.yandex.practicum.stats.controller;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import org.springframework.format.annotation.DateTimeFormat;
 import ru.yandex.practicum.dto.ParamHitDto;
 import ru.yandex.practicum.dto.StatDto;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.stats.service.StatsService;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -32,8 +35,8 @@ public class StatsController {
     }
 
     @GetMapping("/stats")
-    public List<StatDto> getStat(@RequestParam String start,
-                                  @RequestParam String end,
+    public List<StatDto> getStat(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+                                 @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
                                   @RequestParam(value = "uris", required = false) List<String> uris,
                                   @RequestParam(defaultValue = "false") boolean unique) {
         return statsService.getStat(start, end,uris, unique);

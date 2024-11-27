@@ -14,10 +14,10 @@ public class GetStatsValidator extends AbstractValidator {
     }
 
     public void validate() {
-        if (request.getStartTime() == null || request.getStartTime().isBlank()) {
+        if (request.getStartTime() == null) {
             validateResult.add("Не указано время начала выгрузки статистики");
         }
-        if (request.getEndTime() == null || request.getEndTime().isBlank()) {
+        if (request.getEndTime() == null) {
             validateResult.add("Не указано время конца выгрузки статистики");
         }
     }

@@ -6,16 +6,15 @@ import ru.yandex.practicum.ewm.category.dto.NewCategoryDto;
 
 import java.util.List;
 
-
 public interface CategoryService {
 
-    public CategoryDto createCategoryAdmin(NewCategoryDto newCategoryDto);
+    CategoryDto create(NewCategoryDto newCategoryDto);
 
-    public CategoryDto updateCategoryAdmin(CategoryDto categoryDto);
+    void delete(Long id);
 
-    public void deleteCategoryAdmin(Long categoryId);
+    CategoryDto update(Long catId, CategoryDto categoryDto);
 
-    public List<CategoryDto> getCategories(Pageable pageable);
+    List<CategoryDto> getCategories(int from, int size);
 
-    public CategoryDto getCategory(Long categoryId);
+    CategoryDto getCategoryById(Long catId);
 }

@@ -1,29 +1,32 @@
 package ru.yandex.practicum.ewm.compilation.mapper;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.ewm.compilation.dto.CompilationDto;
+import ru.yandex.practicum.ewm.compilation.dto.NewCompilationDto;
 import ru.yandex.practicum.ewm.compilation.model.Compilation;
-import ru.yandex.practicum.ewm.event.mapper.EventMapper;
+import ru.yandex.practicum.ewm.event.dto.EventRequestStatusUpdateResult;
+import ru.yandex.practicum.ewm.event.dto.EventShortDto;
+import ru.yandex.practicum.ewm.event.model.Event;
 
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Set;
 
 @Component
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CompilationMapper {
-    final EventMapper eventMapper;
+    public Compilation toCompilationFromNewCompilationDto(NewCompilationDto newCompilationDto, Set<Event> events) {
+        return Compilation.builder()
+                .title(newCompilationDto.getTitle())
+                .events(events)
+                .pinned(newCompilationDto.isPinned())
+                .build();
+    }
 
-    public CompilationDto toDto(Compilation compilation, Long view) {
-        CompilationDto compilationDto = new CompilationDto();
-        compilationDto.setId(compilation.getId());
-        compilationDto.setPinned(compilation.getPinned() != null && compilation.getPinned());
-        compilationDto.setTitle(compilation.getTitle());
-        compilationDto.setEvents(compilation.getEvents().stream()
-                .map(x -> eventMapper.toShort(x, view))
-                .collect(Collectors.toList()));
-        return compilationDto;
+    public CompilationDto toCompilationDtoFromCompilation(Compilation compilation, List<EventShortDto> events) {
+        return CompilationDto.builder()
+                .id(compilation.getId())
+                .title(compilation.getTitle())
+                .pinned(compilation.isPinned())
+                .events(events)
+                .build();
     }
 }
