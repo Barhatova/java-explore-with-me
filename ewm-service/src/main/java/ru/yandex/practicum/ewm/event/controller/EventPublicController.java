@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.ewm.event.dto.EventFullDto;
-import ru.yandex.practicum.ewm.event.dto.EventRequestStatusUpdateResult;
 import ru.yandex.practicum.ewm.event.dto.EventShortDto;
 import ru.yandex.practicum.ewm.event.model.SortType;
 import ru.yandex.practicum.ewm.event.service.EventService;

@@ -1,6 +1,5 @@
 package ru.yandex.practicum.ewm.category.service;
 
-import org.springframework.data.domain.Pageable;
 import ru.yandex.practicum.ewm.category.dto.CategoryDto;
 import ru.yandex.practicum.ewm.category.dto.NewCategoryDto;
 

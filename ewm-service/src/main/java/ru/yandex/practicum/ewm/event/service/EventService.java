@@ -1,14 +1,7 @@
 package ru.yandex.practicum.ewm.event.service;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.data.domain.Pageable;
-import ru.yandex.practicum.ewm.event.dto.EventRequestStatusUpdateRequest;
-import ru.yandex.practicum.ewm.event.dto.EventFullDto;
-import ru.yandex.practicum.ewm.event.dto.EventRequestStatusUpdateResult;
-import ru.yandex.practicum.ewm.event.dto.EventShortDto;
-import ru.yandex.practicum.ewm.event.dto.NewEventDto;
-import ru.yandex.practicum.ewm.event.dto.UpdateEventAdminRequest;
-import ru.yandex.practicum.ewm.event.dto.UpdateEventUserRequest;
+import ru.yandex.practicum.ewm.event.dto.*;
 import ru.yandex.practicum.ewm.event.model.SortType;
 import ru.yandex.practicum.ewm.event.model.State;
 import ru.yandex.practicum.ewm.request.dto.ParticipationRequestDto;

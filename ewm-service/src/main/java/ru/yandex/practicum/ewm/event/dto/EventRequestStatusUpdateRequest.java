@@ -4,7 +4,6 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.ewm.request.model.RequestStatus;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data

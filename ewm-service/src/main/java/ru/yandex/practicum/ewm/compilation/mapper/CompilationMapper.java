@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.ewm.compilation.dto.CompilationDto;
 import ru.yandex.practicum.ewm.compilation.dto.NewCompilationDto;
 import ru.yandex.practicum.ewm.compilation.model.Compilation;
-import ru.yandex.practicum.ewm.event.dto.EventRequestStatusUpdateResult;
 import ru.yandex.practicum.ewm.event.dto.EventShortDto;
 import ru.yandex.practicum.ewm.event.model.Event;
 

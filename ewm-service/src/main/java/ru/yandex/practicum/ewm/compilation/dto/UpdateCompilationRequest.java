@@ -3,8 +3,6 @@ package ru.yandex.practicum.ewm.compilation.dto;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.validator.constraints.UniqueElements;
 

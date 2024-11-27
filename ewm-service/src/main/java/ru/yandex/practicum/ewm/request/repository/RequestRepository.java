@@ -7,7 +7,6 @@ import ru.yandex.practicum.ewm.request.model.RequestStatus;
 import ru.yandex.practicum.ewm.user.model.User;
 
 import java.util.Collection;
-import java.util.List;
 
 public interface RequestRepository extends JpaRepository<ParticipationRequest, Long> {
     Collection<ParticipationRequest> findAllByEvent(Event event);
