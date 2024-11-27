@@ -3,7 +3,7 @@ package ru.yandex.practicum.ewm;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = {"ru.practicum.client", "ru.practicum.ewm"})
+@SpringBootApplication(scanBasePackages = {"ru.practicum.client", "ru.yandex.practicum.ewm"})
 public class EwmApplication {
 
     public static void main(String[] args) {
