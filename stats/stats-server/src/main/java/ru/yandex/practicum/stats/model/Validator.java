@@ -1,15 +1,11 @@
 package ru.yandex.practicum.stats.model;
 
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.experimental.FieldDefaults;
-
 import java.util.ArrayList;
 
 @Getter
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Validator {
-    final ArrayList<String> messages;
+    private final ArrayList<String> messages;
 
     public Validator() {
         messages = new ArrayList<>();

@@ -1,33 +1,33 @@
 package ru.yandex.practicum.stats.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
-@Data
 @Entity
-@Builder
 @Table(name = "stats")
-@NoArgsConstructor
+@Data
+@Builder
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class Stat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
+
     @Column(name = "app", nullable = false)
-    String app;
+    private String app;
+
     @Column(name = "uri", nullable = false)
-    String uri;
+    private String uri;
+
     @Column(name = "ip", nullable = false)
-    String ip;
+    private String ip;
+
     @Column(name = "timestamp", nullable = false)
-    Instant timestamp;
+    private LocalDateTime timestamp;
 }
