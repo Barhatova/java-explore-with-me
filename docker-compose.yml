@@ -11,7 +11,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
 
   stats-db:
-    image: postgres:17
+    image: postgres:16.1
     container_name: stats-db
     ports:
       - "6542:5432"
@@ -33,7 +33,7 @@ services:
       - SPRING.DATASOURCE.PASSWORD=iamroot
 
   ewm-db:
-    image: postgres:17
+    image: postgres:16.1
     container_name: ewm-db
     ports:
       - "6541:5432"
