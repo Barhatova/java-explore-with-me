@@ -1,6 +1,5 @@
 package ru.yandex.practicum.ewm.compilation.service;
 
-import org.springframework.data.domain.Pageable;
 import ru.yandex.practicum.ewm.compilation.dto.CompilationDto;
 import ru.yandex.practicum.ewm.compilation.dto.NewCompilationDto;
 import ru.yandex.practicum.ewm.compilation.dto.UpdateCompilationRequest;
@@ -8,13 +7,13 @@ import ru.yandex.practicum.ewm.compilation.dto.UpdateCompilationRequest;
 import java.util.List;
 
 public interface CompilationService {
-    CompilationDto createCompilationAdmin(NewCompilationDto newCompilationDto);
+    List<CompilationDto> getCompilations(Boolean pinned, int from, int size);
 
-    CompilationDto updateCompilationAdmin(Long compilationId, UpdateCompilationRequest updateCompilationRequest);
+    CompilationDto getCompilationById(Long compId);
 
-    void deleteCompilationAdmin(Long compilationId);
+    CompilationDto create(NewCompilationDto newCompilationDto);
 
-    List<CompilationDto> findCompilationsPublic(Boolean pinned, Pageable pageable);
+    void deleteById(Long compId);
 
-    CompilationDto findCompilationPublic(Long compilationId);
+    CompilationDto update(Long compId, UpdateCompilationRequest updateCompilationRequest);
 }

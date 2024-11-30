@@ -1,90 +1,151 @@
 package ru.yandex.practicum.ewm.request.service;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.ewm.event.model.Event;
-import ru.yandex.practicum.ewm.event.model.EventState;
+import ru.yandex.practicum.ewm.event.model.State;
 import ru.yandex.practicum.ewm.event.repository.EventRepository;
-import ru.yandex.practicum.ewm.exception.ObjectNotFoundException;
-import ru.yandex.practicum.ewm.exception.RulesViolationException;
+import ru.yandex.practicum.ewm.exception.EventParticipationConstraintException;
+import ru.yandex.practicum.ewm.exception.NotFoundException;
 import ru.yandex.practicum.ewm.request.dto.ParticipationRequestDto;
 import ru.yandex.practicum.ewm.request.mapper.RequestMapper;
-import ru.yandex.practicum.ewm.request.model.Request;
+import ru.yandex.practicum.ewm.request.model.ParticipationRequest;
 import ru.yandex.practicum.ewm.request.model.RequestStatus;
 import ru.yandex.practicum.ewm.request.repository.RequestRepository;
 import ru.yandex.practicum.ewm.user.model.User;
 import ru.yandex.practicum.ewm.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Slf4j
+import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeClass;
+import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeMethod;
+
 @Service
+@Slf4j
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class RequestServiceImpl implements RequestService {
-    final RequestRepository requestRepository;
-    final EventRepository eventRepository;
-    final UserRepository userRepository;
-    final RequestMapper requestMapper;
+    private final RequestRepository requestRepository;
+    private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+    private final RequestMapper requestMapper;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ParticipationRequestDto> getRequests(Long userId) {
+        log.info("{}: Starting execution of {} method.", colorizeClass("RequestService"), colorizeMethod("getRequests()"));
+
+        log.info("{}.{}: Fetching user with id={}", colorizeClass("RequestService"), colorizeMethod("getRequests()"), userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("User with id=%d not found", userId)));
+
+        log.info("{}.{}: Fetching requests by user with id={}", colorizeClass("RequestService"), colorizeMethod("getRequests()"), userId);
+        Collection<ParticipationRequest> requests = requestRepository.findAllByRequester(user);
+
+        if (requests.isEmpty()) {
+            log.info("{}.{}: No requests found for user with id={}", colorizeClass("RequestService"), colorizeMethod("getRequests()"), userId);
+            return List.of();
+        }
+
+        log.info("{}.{}: Mapping requests to DTOs", colorizeClass("RequestService"), colorizeMethod("getRequests()"));
+        List<ParticipationRequestDto> result = requests.stream()
+                .map(requestMapper::toParticipationRequestDto)
+                .toList();
+
+        log.info("{}.{}: Successfully fetched requests for user with id={}.", colorizeClass("RequestService"), colorizeMethod("getRequests()"), userId);
+        return result;
+    }
 
     @Override
     @Transactional
-    public ParticipationRequestDto createRequestPrivate(Long userId, Long eventId) {
-        Request request = new Request();
-        Event event = eventRepository.findById(eventId).orElseThrow(
-                () -> new ObjectNotFoundException(String.format("Событие по id {} не найдено", eventId)));
-        User user = getUserOrThrow(userId);
-        List<Request> requests = requestRepository.getAllByRequesterIdAndEventId(userId, eventId);
-        if (!requests.isEmpty()) {
-            throw new RulesViolationException("Ваш запрос добавлен");
+    public ParticipationRequestDto create(Long userId, Long eventId) {
+        log.info("{}: Starting execution of {} method.", colorizeClass("RequestService"), colorizeMethod("create()"));
+
+        log.info("{}.{}: Fetching user with id={}", colorizeClass("RequestService"), colorizeMethod("create()"), userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("User with id=%d not found", userId)));
+
+        log.info("{}.{}: Fetching event with id={} for user with id={}", colorizeClass("RequestService"), colorizeMethod("create()"), eventId, userId);
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d not found", eventId)));
+
+        log.info("{}.{}: Checking whether the creator of the event with id={} is the creator of the request.", colorizeClass("RequestService"), colorizeMethod("create()"), eventId);
+        if (event.getInitiator().equals(user)) {
+            throw new EventParticipationConstraintException(String.format("User with id=%d is the owner of the event with id=%d.", userId, eventId));
         }
-        if (userId.equals(event.getInitiator().getId())) {
-            throw new RulesViolationException("Владельцем события не может быть добавлен");
+
+        if (!event.getState().equals(State.PUBLISHED)) {
+            throw new EventParticipationConstraintException(String.format("Event not published. " +
+                    "A user with id=%d cannot make a request to participate in an event with id=%d.", userId, eventId));
         }
-        if (!event.getState().equals(EventState.PUBLISHED)) {
-            throw new RulesViolationException("Не удается добавить в не опубликованное событие");
+
+        log.info("{}.{}: Checking if event with id={} has reached its participant limit.", colorizeClass("RequestService"), colorizeMethod("create()"), eventId);
+        if (event.getParticipantLimit() > 0 && event.getConfirmedRequests().equals(event.getParticipantLimit())) {
+            throw new EventParticipationConstraintException(String.format("The event with id=%d has reached the limit(%d) of requests for participation.", eventId, event.getParticipantLimit()));
         }
-        if (event.getParticipantLimit() != 0 && event.getParticipantLimit().equals(event.getConfirmedRequests())) {
-            throw new RulesViolationException("Достигнут лимит участников");
+
+        log.info("{}.{}: Determining the status of the participation request for event with id={}", colorizeClass("RequestService"), colorizeMethod("create()"), eventId);
+        RequestStatus status = event.isRequestModeration() ? RequestStatus.PENDING : RequestStatus.CONFIRMED;
+
+        if (event.getParticipantLimit() == 0) {
+            status = RequestStatus.CONFIRMED;
         }
-        request.setRequester(user);
-        request.setEvent(event);
-        request.setStatus(RequestStatus.PENDING);
-        request.setCreated(LocalDateTime.now());
-        if (event.getParticipantLimit() == 0 || !event.getRequestModeration()) {
-            request.setStatus(RequestStatus.CONFIRMED);
+
+        log.info("{}.{}: Creating a new participation request for user with id={} and event with id={}", colorizeClass("RequestService"), colorizeMethod("create()"), userId, eventId);
+        ParticipationRequest request = ParticipationRequest.builder()
+                .created(LocalDateTime.now())
+                .event(event)
+                .requester(user)
+                .status(status)
+                .build();
+
+        log.info("{}.{}: Saving the participation request", colorizeClass("RequestService"), colorizeMethod("create()"));
+        request = requestRepository.save(request);
+
+        if (status.equals(RequestStatus.CONFIRMED)) {
+            log.info("{}.{}: Participation request for event with id={} has status CONFIRMED. Incrementing confirmed requests count.", colorizeClass("RequestService"), colorizeMethod("create()"), eventId);
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             eventRepository.save(event);
         }
-               return requestMapper.toDto(requestRepository.save(request));
+
+        log.info("{}.{}: Mapping participation request to ParticipationRequestDto", colorizeClass("RequestService"), colorizeMethod("create()"));
+        ParticipationRequestDto requestDto = requestMapper.toParticipationRequestDto(request);
+
+        log.info("{}.{}: Successfully created participation request with id={}", colorizeClass("RequestService"), colorizeMethod("create()"), request.getId());
+
+        return requestDto;
     }
 
     @Override
-    public List<ParticipationRequestDto> getRequestsPrivate(Long userId) {
-        getUserOrThrow(userId);
-                return requestRepository.getAllByRequesterId(userId).stream()
-                .map(requestMapper::toDto).collect(Collectors.toList());
-    }
+    @Transactional
+    public ParticipationRequestDto cancel(Long userId, Long requestId) {
+        log.info("{}: Starting execution of {} method.", colorizeClass("RequestService"), colorizeMethod("cancel()"));
 
-    @Override
-    public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
-        getUserOrThrow(userId);
-        Request request = requestRepository.findById(requestId).orElseThrow(
-                () -> new ObjectNotFoundException(String.format("Запрос по id {} не найден", requestId)));
+        log.info("{}.{}: Fetching user with id={}", colorizeClass("RequestService"), colorizeMethod("cancel()"), userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("User with id=%d not found", userId)));
+
+        log.info("{}.{}: Fetching request with id={}", colorizeClass("RequestService"), colorizeMethod("cancel()"), requestId);
+        ParticipationRequest request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new NotFoundException(String.format("Request with id=%d not found", requestId)));
+
+        if (!request.getRequester().equals(user)) {
+            throw new NotFoundException(String.format("Request with id=%d not found", requestId));
+        }
+
+        log.info("{}.{}: Cancelling request with id={}", colorizeClass("RequestService"), colorizeMethod("cancel()"), requestId);
         request.setStatus(RequestStatus.CANCELED);
-        request = requestRepository.save(request);
-               return requestMapper.toDto(request);
-    }
 
-    private User getUserOrThrow(long id) {
-        return userRepository.findById(id).orElseThrow(
-                () -> new ObjectNotFoundException(String.format("Пользователь по id {} не найден", id)));
+        log.info("{}.{}: Saving the request", colorizeClass("RequestService"), colorizeMethod("cancel()"));
+        request = requestRepository.save(request);
+
+        log.info("{}.{}: Mapping request to DTO", colorizeClass("RequestService"), colorizeMethod("cancel()"));
+        ParticipationRequestDto requestDto = requestMapper.toParticipationRequestDto(request);
+
+        log.info("{}.{}: Successfully cancelled request with id={}", colorizeClass("RequestService"), colorizeMethod("cancel()"), requestId);
+        return requestDto;
     }
 }

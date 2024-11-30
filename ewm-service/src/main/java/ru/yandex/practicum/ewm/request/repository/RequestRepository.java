@@ -1,16 +1,19 @@
 package ru.yandex.practicum.ewm.request.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.yandex.practicum.ewm.request.model.Request;
+import ru.yandex.practicum.ewm.event.model.Event;
+import ru.yandex.practicum.ewm.request.model.ParticipationRequest;
+import ru.yandex.practicum.ewm.request.model.RequestStatus;
+import ru.yandex.practicum.ewm.user.model.User;
 
-import java.util.List;
+import java.util.Collection;
 
-public interface RequestRepository extends JpaRepository<Request, Long> {
-    List<Request> getAllByRequesterIdAndEventId(Long eventId, Long userId);
+public interface RequestRepository extends JpaRepository<ParticipationRequest, Long> {
+    Collection<ParticipationRequest> findAllByEvent(Event event);
 
-    List<Request> getAllByRequesterId(Long userId);
+    Collection<ParticipationRequest> findAllByEventAndStatus(Event event, RequestStatus status);
 
-    List<Request> getAllByEventId(Long eventId);
+    Long countByEventAndStatus(Event event, RequestStatus status);
 
-    List<Request> getByIdIn(List<Long> ids);
+    Collection<ParticipationRequest> findAllByRequester(User user);
 }

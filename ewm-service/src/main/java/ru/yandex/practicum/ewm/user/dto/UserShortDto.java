@@ -1,17 +1,14 @@
 package ru.yandex.practicum.ewm.user.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Builder;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
-@Getter
-@Setter
+@Data
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserShortDto {
-    @NotNull
     Long id;
-    @NotNull
     String name;
 }
