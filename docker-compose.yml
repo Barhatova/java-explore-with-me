@@ -1,24 +1,27 @@
-services:
+sservices:
   stats-server:
+    build: stats/stats-server
+    image: stats-server
     container_name: stats-server
-    build:
-      context: ./stats/stats-server
     ports:
       - "9090:9090"
+    depends_on:
+      - stats-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/postgres1
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/stats
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+
 
   stats-db:
     image: postgres:16.1
     container_name: stats-db
     ports:
-      - "6542:5432"
+      - "5431:5432"
     environment:
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_USER=user
-      - POSTGRES_DB=postgres1
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=stats
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       timeout: 5s
@@ -26,26 +29,27 @@ services:
       retries: 10
 
   ewm-service:
-    container_name: ewm-service
-    build: ./ewm-service
+    build: main-service
+    image: ewm-service
+    container_name: ewm_service
     ports:
       - "8080:8080"
-
+    depends_on:
+      - ewm-db
     environment:
-      - STATS_SERVER_URL=http://stats-service:9090
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/postgres2
-      - SPRING.DATASOURCE.USERNAME=postgres
-      - SPRING.DATASOURCE.PASSWORD=iamroot
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
 
   ewm-db:
     image: postgres:16.1
     container_name: ewm-db
     ports:
-      - "6541:5432"
+      - "5432:5432"
     environment:
-      - POSTGRES_DB=postgres2
+      - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=iamroot
+      - POSTGRES_DB=ewm
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       timeout: 5s
