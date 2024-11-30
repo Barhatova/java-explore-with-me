@@ -1,22 +1,20 @@
 package ru.yandex.practicum.ewm.user.mapper;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.ewm.user.dto.NewUserRequest;
 import ru.yandex.practicum.ewm.user.dto.UserDto;
 import ru.yandex.practicum.ewm.user.dto.UserShortDto;
 import ru.yandex.practicum.ewm.user.model.User;
 
 @Component
 public class UserMapper {
-
-    public User toUser(NewUserRequest newUserRequest) {
+    public User toUser(UserDto userDto) {
         return User.builder()
-                .name(newUserRequest.getName())
-                .email(newUserRequest.getEmail())
+                .name(userDto.getName())
+                .email(userDto.getEmail())
                 .build();
     }
 
-    public UserDto toDto(User user) {
+    public UserDto toUserDto(User user) {
         return UserDto.builder()
                 .id(user.getId())
                 .name(user.getName())
@@ -24,10 +22,10 @@ public class UserMapper {
                 .build();
     }
 
-    public UserShortDto toShort(User user) {
-        UserShortDto userShortDto = new UserShortDto();
-        userShortDto.setId(user.getId());
-        userShortDto.setName(user.getName());
-        return userShortDto;
+    public UserShortDto toUserShortDto(User user) {
+        return UserShortDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .build();
     }
 }

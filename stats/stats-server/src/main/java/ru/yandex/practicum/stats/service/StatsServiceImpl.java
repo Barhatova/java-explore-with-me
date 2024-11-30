@@ -1,46 +1,32 @@
 package ru.yandex.practicum.stats.service;
 
-import ru.yandex.practicum.dto.ParamDto;
-import ru.yandex.practicum.dto.ParamHitDto;
-import ru.yandex.practicum.dto.StatDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.stats.mapper.DataTimeMapper;
-import ru.yandex.practicum.stats.exception.ValidationException;
+import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.dto.ParamHitDto;
+import ru.yandex.practicum.dto.StatDto;
+import ru.yandex.practicum.stats.exception.BadRequestException;
+import ru.yandex.practicum.stats.mapper.StatMapping;
 import ru.yandex.practicum.stats.model.Stat;
 import ru.yandex.practicum.stats.repository.StatsRepository;
-import ru.yandex.practicum.stats.validator.CreateStatValidator;
-import ru.yandex.practicum.stats.validator.GetStatsValidator;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
+@Service
 @Slf4j
 @RequiredArgsConstructor
-@Service
 public class StatsServiceImpl implements StatsService {
-    @Autowired
     private final StatsRepository statsRepository;
+    private final StatMapping statMapping;
 
     @Override
-    public void createStat(ParamHitDto newStat) {
-        CreateStatValidator validator = new CreateStatValidator(newStat);
-        validator.validate();
-        if (!validator.isValid()) {
-            throw new ValidationException("Невалидные параметры", validator.getMessages());
-        }
-        Stat stat = Stat.builder()
-                .app(newStat.getApp())
-                .uri(newStat.getUri())
-                .ip(newStat.getIp())
-                .timestamp(newStat.getTimestamp())
-                .build();
-        statsRepository.save(stat);
+    @Transactional
+    public void createStat(ParamHitDto stat) {
+        Stat endpointHit = statMapping.toParamHit(stat);
+        statsRepository.save(endpointHit);
     }
 
     @Override
@@ -72,23 +58,47 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
-    public List<StatDto> getStat(String startTime, String endTime, List<String> uris, boolean unique) {
-        GetStatsValidator validator = new GetStatsValidator(new ParamDto(startTime,endTime));
-        validator.validate();
-        if (!validator.isValid()) {
-            throw new ValidationException("Невалидные параметры", validator.getMessages());
+    public List<StatDto> getStat(LocalDateTime start,
+                                 LocalDateTime end,
+                                 List<String> uris,
+                                 boolean unique) {
+        List<Stat> hits = new ArrayList<>();
+
+        if (start.isAfter(end)) {
+            throw new BadRequestException("Дата начала должна быть раньше даты окончания");
         }
-        List<StatDto> statForOutput;
-        List<Stat> stats;
-        if (uris == null) {
-            stats = statsRepository.getStatByForThePeriod(DataTimeMapper.toInstant(startTime),
-                    DataTimeMapper.toInstant(endTime));
+        if (uris != null && !uris.isEmpty()) {
+            hits.addAll(statsRepository.findByTimestampBetweenAndUriIn(start, end, uris));
         } else {
-            stats = statsRepository.getStatByUriForThePeriod(DataTimeMapper.toInstant(startTime),
-                    DataTimeMapper.toInstant(endTime),
-                    uris);
+            hits.addAll(statsRepository.findByTimestampBetween(start, end));
         }
-        statForOutput = this.groupStat(stats, unique);
-        return statForOutput;
+
+        if (unique) {
+            Map<String, Stat> uniqueHitsByIp = new HashMap<>();
+
+            for (Stat hit : hits) {
+                String ip = hit.getIp();
+                uniqueHitsByIp.putIfAbsent(ip, hit);
+            }
+            return toViewStatsDtoList(uniqueHitsByIp.values());
+        }
+        return toViewStatsDtoList(hits);
+    }
+
+    private List<StatDto> toViewStatsDtoList(Collection<Stat> hits) {
+        Map<String, Map<String, Long>> groupedStats = hits.stream()
+                .collect(Collectors.groupingBy(Stat::getApp,
+                        Collectors.groupingBy(Stat::getUri, Collectors.counting())));
+
+        List<StatDto> result = groupedStats.entrySet().stream()
+                .flatMap(appEntry -> appEntry.getValue().entrySet().stream()
+                        .map(uriEntry -> StatDto.builder()
+                                .app(appEntry.getKey())
+                                .uri(uriEntry.getKey())
+                                .hits(uriEntry.getValue().longValue())
+                                .build()))
+                .sorted(Comparator.comparing(StatDto::getHits).reversed())
+                .toList();
+        return result;
     }
 }
