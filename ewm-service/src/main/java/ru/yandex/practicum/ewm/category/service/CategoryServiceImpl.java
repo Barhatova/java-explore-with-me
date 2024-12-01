@@ -1,6 +1,8 @@
 package ru.yandex.practicum.ewm.category.service;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,9 +25,10 @@ import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeMethod;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryServiceImpl implements CategoryService {
-    private final CategoryRepository categoryRepository;
-    private final CategoryMapper categoryMapper;
+    final CategoryRepository categoryRepository;
+    final CategoryMapper categoryMapper;
 
     @Override
     @Transactional

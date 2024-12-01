@@ -1,6 +1,8 @@
 package ru.yandex.practicum.ewm.user.service;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,9 +24,10 @@ import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeMethod;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserServiceImpl implements UserService {
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
+    final UserRepository userRepository;
+    final UserMapper userMapper;
 
     @Override
     @Transactional

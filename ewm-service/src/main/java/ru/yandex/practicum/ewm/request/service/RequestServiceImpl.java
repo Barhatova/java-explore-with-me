@@ -1,6 +1,8 @@
 package ru.yandex.practicum.ewm.request.service;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,11 +29,12 @@ import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeMethod;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class RequestServiceImpl implements RequestService {
-    private final RequestRepository requestRepository;
-    private final EventRepository eventRepository;
-    private final UserRepository userRepository;
-    private final RequestMapper requestMapper;
+    final RequestRepository requestRepository;
+    final EventRepository eventRepository;
+    final UserRepository userRepository;
+    final RequestMapper requestMapper;
 
     @Override
     @Transactional(readOnly = true)

@@ -3,7 +3,9 @@ package ru.yandex.practicum.ewm.event.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -15,8 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.client.StatsClient;
-import ru.yandex.practicum.dto.EndpointHitDto;
-import ru.yandex.practicum.dto.ViewStatsDto;
+import ru.yandex.practicum.dto.ParamHitDto;
+import ru.yandex.practicum.dto.StatDto;
 import ru.yandex.practicum.ewm.category.model.Category;
 import ru.yandex.practicum.ewm.category.repository.CategoryRepository;
 import ru.yandex.practicum.ewm.event.dto.*;
@@ -47,17 +49,18 @@ import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeMethod;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventServiceImpl implements EventService {
-    private final EventRepository eventRepository;
-    private final UserRepository userRepository;
-    private final CategoryRepository categoryRepository;
-    private final RequestRepository requestRepository;
-    private final StatsClient statsClient;
-    private final EventMapper eventMapper;
-    private final RequestMapper requestMapper;
-    private final ObjectMapper objectMapper;
+    final EventRepository eventRepository;
+    final UserRepository userRepository;
+    final CategoryRepository categoryRepository;
+    final RequestRepository requestRepository;
+    final StatsClient statsClient;
+    final EventMapper eventMapper;
+    final RequestMapper requestMapper;
+    final ObjectMapper objectMapper;
     @Value("${spring.application.name}")
-    private String serviceId;
+    String serviceId;
 
     @Override
     @Transactional
@@ -357,7 +360,6 @@ public class EventServiceImpl implements EventService {
         return fullDto;
     }
 
-
     @Override
     @Transactional
     public EventFullDto updateByCurrentUser(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
@@ -544,7 +546,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private void sendStatisticalData(HttpServletRequest request) {
-        EndpointHitDto stat = EndpointHitDto.builder()
+        ParamHitDto stat = ParamHitDto.builder()
                 .app(serviceId)
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
@@ -554,12 +556,12 @@ public class EventServiceImpl implements EventService {
         statsClient.create(stat);
     }
 
-    private List<ViewStatsDto> convertResponseToList(ResponseEntity<Object> response) {
+    private List<StatDto> convertResponseToList(ResponseEntity<Object> response) {
         if (response.getBody() == null) {
             return List.of();
         }
         try {
-            return objectMapper.convertValue(response.getBody(), new TypeReference<List<ViewStatsDto>>() {
+            return objectMapper.convertValue(response.getBody(), new TypeReference<List<StatDto>>() {
             });
         } catch (Exception e) {
             throw new RuntimeException("Failed to convert response to list", e);
@@ -573,10 +575,10 @@ public class EventServiceImpl implements EventService {
         String endDate = LocalDateTime.now().format(formatter);
         List<String> uris = List.of(uri);
 
-        List<ViewStatsDto> stats = convertResponseToList(statsClient.getStats(startDate, endDate, uris, true));
+        List<StatDto> stats = convertResponseToList(statsClient.getStats(startDate, endDate, uris, true));
 
         return stats.isEmpty()
                 ? 0L
-                : stats.stream().mapToLong(ViewStatsDto::getHits).sum();
+                : stats.stream().mapToLong(StatDto::getHits).sum();
     }
 }

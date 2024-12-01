@@ -1,6 +1,8 @@
 package ru.yandex.practicum.ewm.compilation.service;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,11 +31,12 @@ import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeMethod;
 @Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CompilationServiceImpl implements CompilationService {
-    private final CompilationRepository compilationRepository;
-    private final EventRepository eventRepository;
-    private final CompilationMapper compilationMapper;
-    private final EventMapper eventMapper;
+    final CompilationRepository compilationRepository;
+    final EventRepository eventRepository;
+    final CompilationMapper compilationMapper;
+    final EventMapper eventMapper;
 
     @Override
     public List<CompilationDto> getCompilations(Boolean pinned, int from, int size) {

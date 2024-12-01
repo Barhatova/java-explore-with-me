@@ -1,6 +1,8 @@
 package ru.yandex.practicum.ewm.compilation.controller;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.ewm.compilation.dto.CompilationDto;
 import ru.yandex.practicum.ewm.compilation.service.CompilationService;
@@ -10,8 +12,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/compilations")
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CompilationPublicController {
-    private final CompilationService compilationService;
+    final CompilationService compilationService;
 
     @GetMapping
     public List<CompilationDto> getCompilations(@RequestParam(required = false) Boolean pinned,

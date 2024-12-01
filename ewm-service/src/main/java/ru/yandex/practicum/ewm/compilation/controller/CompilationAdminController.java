@@ -1,7 +1,9 @@
 package ru.yandex.practicum.ewm.compilation.controller;
 
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.ewm.compilation.dto.CompilationDto;
@@ -12,8 +14,9 @@ import ru.yandex.practicum.ewm.compilation.service.CompilationService;
 @RestController
 @RequestMapping("admin/compilations")
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CompilationAdminController {
-    private final CompilationService compilationService;
+    final CompilationService compilationService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

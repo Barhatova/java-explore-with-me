@@ -1,7 +1,9 @@
 package ru.yandex.practicum.ewm.event.controller;
 
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.ewm.event.dto.EventFullDto;
@@ -15,8 +17,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/events")
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventAdminController {
-    private final EventService eventService;
+    final EventService eventService;
 
     @GetMapping
     public List<EventFullDto> getFullEvents(@RequestParam(required = false) List<Long> users,

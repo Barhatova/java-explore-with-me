@@ -1,6 +1,8 @@
 package ru.yandex.practicum.ewm.category.controller;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.ewm.category.dto.CategoryDto;
 import ru.yandex.practicum.ewm.category.service.CategoryService;
@@ -10,8 +12,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryPublicController {
-    private final CategoryService categoryService;
+    final CategoryService categoryService;
 
     @GetMapping
     public List<CategoryDto> getCategories(
