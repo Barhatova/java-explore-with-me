@@ -18,7 +18,6 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(final NotFoundException e) {
-        getLog(e, "NotFoundException");
         return new ErrorResponse(HttpStatus.NOT_FOUND,
                 "The required object was not found.",
                 e.getMessage());
@@ -27,7 +26,6 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequestException(final BadRequestException e) {
-        getLog(e, "BadRequestException");
         return new ErrorResponse(HttpStatus.BAD_REQUEST,
                 "Incorrectly made request.",
                 e.getMessage());
@@ -69,7 +67,6 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleConflictException(final ConflictException e) {
-        getLog(e, "ConflictException");
         return new ErrorResponse(HttpStatus.CONFLICT,
                 "There are events associated with the category.",
                 e.getMessage());
@@ -78,7 +75,6 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleViolationOfEditingRulesException(final ViolationOfEditingRulesException e) {
-        getLog(e, "ViolationOfEditingRulesException");
         return new ErrorResponse(HttpStatus.CONFLICT,
                 "For the requested operation the conditions are not met.",
                 e.getMessage());
@@ -87,7 +83,6 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleEventParticipationConstraintException(final EventParticipationConstraintException e) {
-        getLog(e, "ConflictException");
         return new ErrorResponse(HttpStatus.CONFLICT,
                 "Restriction of participation in the event.",
                 e.getMessage());
@@ -96,7 +91,6 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleConstraintUpdatingException(final ConstraintUpdatingException e) {
-        getLog(e, "ConflictException");
         return new ErrorResponse(HttpStatus.CONFLICT,
                 "Restriction of editing in the event.",
                 e.getMessage());
@@ -111,18 +105,5 @@ public class ErrorHandler {
                 "Integrity constraint has been violated.",
                 message
         );
-    }
-
-    private void getLog(RuntimeException e, String exceptionName) {
-        StackTraceElement[] stackTrace = e.getStackTrace();
-        if (stackTrace.length > 0) {
-            StackTraceElement element = stackTrace[0];
-            String methodName = element.getMethodName();
-            String className = element.getClassName();
-            int lastDotIndex = className.lastIndexOf('.');
-            if (lastDotIndex != -1) {
-                className = className.substring(lastDotIndex + 1);
-            }
-        }
     }
 }
