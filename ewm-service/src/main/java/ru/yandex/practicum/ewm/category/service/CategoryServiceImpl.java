@@ -16,9 +16,6 @@ import ru.yandex.practicum.ewm.exception.NotFoundException;
 
 import java.util.List;
 
-import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeClass;
-import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeMethod;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -30,71 +27,46 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryDto create(NewCategoryDto newCategoryDto) {
-        log.info("{}: Starting execution of {} method.", colorizeClass("CategoryService"), colorizeMethod("create()"));
-        log.info("{}.{}: Mapping from NewCategoryDto to Category.", colorizeClass("CategoryService"), colorizeMethod("create()"));
-
+        log.info("Запрос на создание категории");
         Category category = categoryMapper.fromNewCategoryDto(newCategoryDto);
-
-        log.info("{}.{}: Saving category to database.", colorizeClass("CategoryService"), colorizeMethod("create()"));
         category = categoryRepository.save(category);
-
-        log.info("{}.{}: Category saved successfully with id={}.", colorizeClass("CategoryService"), colorizeMethod("create()"), category.getId());
-        log.info("{}.{}: Mapping from Category to CategoryDto.", colorizeClass("CategoryService"), colorizeMethod("create()"));
-
         CategoryDto categoryDto = categoryMapper.toCategoryDto(category);
-
-        log.info("{}.{}: Returning CategoryDto with id={}.", colorizeClass("CategoryService"), colorizeMethod("create()"), categoryDto.getId());
+        log.info("Категория создана");
         return categoryDto;
     }
 
     @Override
     @Transactional
     public void delete(Long catId) {
-        log.info("{}: Starting execution of {} method.", colorizeClass("CategoryService"), colorizeMethod("delete()"));
-        log.info("{}.{}: Checking if category exists with id={}.", colorizeClass("CategoryService"), colorizeMethod("delete()"), catId);
-
+        log.info("Запрос на удаление категории");
         if (!categoryRepository.existsById(catId)) {
-            throw new NotFoundException(String.format("Category with id=%d was not found.", catId));
+            throw new NotFoundException(String.format("Каегория не найдена", catId));
         }
-
-        log.info("{}.{}: Deleting category with id={}.", colorizeClass("CategoryService"), colorizeMethod("delete()"), catId);
         categoryRepository.deleteById(catId);
-
-        log.info("{}.{}: Category with id={} deleted successfully.", colorizeClass("CategoryService"), colorizeMethod("delete()"), catId);
+        log.info("Категория удалена");
     }
 
     @Override
     @Transactional
     public CategoryDto update(Long catId, CategoryDto categoryDto) {
-        log.info("{}: Starting execution of {} method.", colorizeClass("CategoryService"), colorizeMethod("update()"));
-        log.info("{}.{}: Checking if category exists with id={}.", colorizeClass("CategoryService"), colorizeMethod("update()"), catId);
-
+        log.info("Запрос на изменение категории");
         Category category = categoryRepository.findById(catId)
-                .orElseThrow(() -> new NotFoundException(String.format("Category with id=%d was not found.", catId)));
-
-        log.info("{}.{}: Updating category with id={}.", colorizeClass("CategoryService"), colorizeMethod("update()"), catId);
-
+                .orElseThrow(() -> new NotFoundException(String.format("Категория не найдена", catId)));
         category.setName(categoryDto.getName());
         categoryRepository.save(category);
-
-        log.info("{}.{}: Category with id={} updated successfully.", colorizeClass("CategoryService"), colorizeMethod("update()"), catId);
-
         CategoryDto categoryDtoUpdated = categoryMapper.toCategoryDto(category);
-
-        log.info("{}.{}: Returning updated CategoryDto for category id={}.", colorizeClass("CategoryService"), colorizeMethod("update()"), catId);
+        log.info("Категория изменена");
         return categoryDtoUpdated;
     }
 
     @Override
     public List<CategoryDto> getCategories(int from, int size) {
-        log.info("{}: Starting execution of {} method.", colorizeClass("CategoryService"), colorizeMethod("getCategories()"));
-        log.info("{}.{}: Fetching categories with pagination from={} size={}.", colorizeClass("CategoryService"), colorizeMethod("getCategories()"), from, size);
-
+        log.info("Запрос на получение списка категорий");
         Pageable pageable = PageRequest.of(from / size, size);
         Page<Category> categoryPage = categoryRepository.findAll(pageable);
 
         if (categoryPage.isEmpty()) {
-            log.info("{}.{}: No categories found.", colorizeClass("CategoryService"), colorizeMethod("getCategories()"));
+            log.info("Категорий нет");
             return List.of();
         }
 
@@ -102,23 +74,17 @@ public class CategoryServiceImpl implements CategoryService {
                 .map(categoryMapper::toCategoryDto)
                 .toList();
 
-        log.info("{}.{}: Returning {} categories.", colorizeClass("CategoryService"), colorizeMethod("getCategories()"), categories.size());
+        log.info("Список категорий получен");
         return categories;
     }
 
     @Override
     public CategoryDto getCategoryById(Long catId) {
-        log.info("{}: Starting execution of {} method.", colorizeClass("CategoryService"), colorizeMethod("getCategoryById()"));
-        log.info("{}.{}: Fetching category with id={}.", colorizeClass("CategoryService"), colorizeMethod("getCategoryById()"), catId);
-
+        log.info("Запрос на получение категории по идентификатору");
         Category category = categoryRepository.findById(catId)
-                .orElseThrow(() -> new NotFoundException(String.format("Category with id=%d was not found.", catId)));
-
-        log.info("{}.{}: Category with id={} found.", colorizeClass("CategoryService"), colorizeMethod("getCategoryById()"), catId);
-
+                .orElseThrow(() -> new NotFoundException(String.format("Категория не найдена", catId)));
         CategoryDto categoryDto = categoryMapper.toCategoryDto(category);
-
-        log.info("{}.{}: Returning CategoryDto with id={}.", colorizeClass("CategoryService"), colorizeMethod("getCategoryById()"), categoryDto.getId());
+        log.info("Категория по идентификатору получена");
         return categoryDto;
     }
 }

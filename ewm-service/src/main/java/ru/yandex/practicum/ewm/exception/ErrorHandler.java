@@ -1,7 +1,6 @@
 package ru.yandex.practicum.ewm.exception;
 
 import jakarta.validation.ConstraintViolationException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -9,65 +8,58 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import ru.yandex.practicum.ewm.exception.*;
 
 import java.util.List;
 import java.util.Objects;
 
-import static ru.yandex.practicum.ewm.util.LogColorizeUtil.*;
-
 @RestControllerAdvice
-@Slf4j
 public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ApiError handleNotFoundException(final NotFoundException e) {
+    public ErrorResponse handleNotFoundException(final NotFoundException e) {
         getLog(e, "NotFoundException");
-        return new ApiError(HttpStatus.NOT_FOUND,
+        return new ErrorResponse(HttpStatus.NOT_FOUND,
                 "The required object was not found.",
                 e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleBadRequestException(final BadRequestException e) {
+    public ErrorResponse handleBadRequestException(final BadRequestException e) {
         getLog(e, "BadRequestException");
-        return new ApiError(HttpStatus.BAD_REQUEST,
+        return new ErrorResponse(HttpStatus.BAD_REQUEST,
                 "Incorrectly made request.",
                 e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleNotValidException(final MethodArgumentNotValidException e) {
+    public ErrorResponse handleNotValidException(final MethodArgumentNotValidException e) {
         List<String> errors = e.getBindingResult().getFieldErrors().stream()
                 .map(error -> "Field: " + error.getField() + ". Error: " + error.getDefaultMessage() + ". Value: " + error.getRejectedValue())
                 .toList();
-        log.error("{}: {}", colorizeError("MethodArgumentNotValidException"), errors);
-        return new ApiError(HttpStatus.BAD_REQUEST,
+        return new ErrorResponse(HttpStatus.BAD_REQUEST,
                 "Incorrectly made request.",
                 String.join("; ", errors));
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleTypeMismatchException(final MethodArgumentTypeMismatchException e) {
+    public ErrorResponse handleTypeMismatchException(final MethodArgumentTypeMismatchException e) {
         String message = "Failed to convert value of type " + Objects.requireNonNull(e.getValue()).getClass().getSimpleName() +
                 " to required type " + Objects.requireNonNull(e.getRequiredType()).getSimpleName() +
                 "; nested exception is " + e.getCause().getMessage();
-        log.error("{}: {}", colorizeError("MethodArgumentTypeMismatchException"), message);
-        return new ApiError(HttpStatus.BAD_REQUEST,
+        return new ErrorResponse(HttpStatus.BAD_REQUEST,
                 "Incorrectly made request.",
                 message);
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleConstraintViolationException(final ConstraintViolationException e) {
+    public ErrorResponse handleConstraintViolationException(final ConstraintViolationException e) {
         String message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-        log.error("ConstraintViolationException: {}", message);
-        return new ApiError(
+        return new ErrorResponse(
                 HttpStatus.CONFLICT,
                 "Integrity constraint has been violated.",
                 message
@@ -76,46 +68,45 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleConflictException(final ConflictException e) {
+    public ErrorResponse handleConflictException(final ConflictException e) {
         getLog(e, "ConflictException");
-        return new ApiError(HttpStatus.CONFLICT,
+        return new ErrorResponse(HttpStatus.CONFLICT,
                 "There are events associated with the category.",
                 e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleViolationOfEditingRulesException(final ViolationOfEditingRulesException e) {
+    public ErrorResponse handleViolationOfEditingRulesException(final ViolationOfEditingRulesException e) {
         getLog(e, "ViolationOfEditingRulesException");
-        return new ApiError(HttpStatus.CONFLICT,
+        return new ErrorResponse(HttpStatus.CONFLICT,
                 "For the requested operation the conditions are not met.",
                 e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleEventParticipationConstraintException(final EventParticipationConstraintException e) {
+    public ErrorResponse handleEventParticipationConstraintException(final EventParticipationConstraintException e) {
         getLog(e, "ConflictException");
-        return new ApiError(HttpStatus.CONFLICT,
+        return new ErrorResponse(HttpStatus.CONFLICT,
                 "Restriction of participation in the event.",
                 e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleConstraintUpdatingException(final ConstraintUpdatingException e) {
+    public ErrorResponse handleConstraintUpdatingException(final ConstraintUpdatingException e) {
         getLog(e, "ConflictException");
-        return new ApiError(HttpStatus.CONFLICT,
+        return new ErrorResponse(HttpStatus.CONFLICT,
                 "Restriction of editing in the event.",
                 e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
+    public ErrorResponse handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
         String message = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-        log.error("DataIntegrityViolationException: {}", message);
-        return new ApiError(
+        return new ErrorResponse(
                 HttpStatus.CONFLICT,
                 "Integrity constraint has been violated.",
                 message
@@ -132,10 +123,6 @@ public class ErrorHandler {
             if (lastDotIndex != -1) {
                 className = className.substring(lastDotIndex + 1);
             }
-
-            log.error("{} in class {}, method {}: {}", colorizeError(exceptionName), colorizeClass(className), colorizeMethod(methodName), e.getMessage());
-        } else {
-            log.error("{}: {}", colorizeError(exceptionName), e.getMessage());
         }
     }
 }

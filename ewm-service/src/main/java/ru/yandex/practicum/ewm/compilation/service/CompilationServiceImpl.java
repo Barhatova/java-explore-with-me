@@ -22,9 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeClass;
-import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeMethod;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -37,51 +34,37 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public List<CompilationDto> getCompilations(Boolean pinned, int from, int size) {
-        log.info("{}: Starting execution of {} method.", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
-
-        Pageable pageable = PageRequest.of(from / size, size);
+        log.info("Запрос на получение списка групп");Pageable pageable = PageRequest.of(from / size, size);
         List<Compilation> compilations;
 
         if (pinned != null) {
-            log.info("{}.{}: Fetching compilations with pinned status: pinned={}", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"), pinned);
             compilations = compilationRepository.findAllByPinned(pinned, pageable).getContent();
         } else {
-            log.info("{}.{}: Fetching all compilations.", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
             compilations = compilationRepository.findAll(pageable).getContent();
         }
 
         if (compilations.isEmpty()) {
-            log.info("{}.{}: No compilations found. Returning an empty list.", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
+            log.info("Список групп пуст");
             return List.of();
         }
-
-        log.info("{}.{}: Mapping compilation to CompilationDto", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
         List<CompilationDto> compilationDtos = compilations.stream()
                 .map(compilation -> {
-                    log.info("{}.{}: Mapping event to EventShortDto", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
                     List<EventShortDto> eventShortDtos = compilation.getEvents().stream().map(eventMapper::toEventShortDtoFromEvent).toList();
                     return compilationMapper.toCompilationDtoFromCompilation(compilation, eventShortDtos);
                 })
                 .toList();
-
-        log.info("{}.{}: Successfully fetched {} compilation.", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"), compilationDtos.size());
+        log.info("Список групп получен");
         return compilationDtos;
     }
 
     @Override
     public CompilationDto getCompilationById(Long compId) {
-        log.info("{}: Starting execution of {} method.", colorizeClass("CompilationService"), colorizeMethod("getCompilationById()"));
-        log.info("{}.{}: Fetching compilation with id={}.", colorizeClass("CompilationService"), colorizeMethod("getCompilationById()"), compId);
+        log.info("Запрос на получение группы по идентификатору");
         Compilation compilation = compilationRepository.findById(compId)
-                .orElseThrow(() -> new NotFoundException(String.format("Compilation with id=%d not found", compId)));
-
-        log.info("{}.{}: Mapping event to EventShortDto", colorizeClass("CompilationService"), colorizeMethod("getCompilationById()"));
+                .orElseThrow(() -> new NotFoundException(String.format("Группа не найдена", compId)));
         List<EventShortDto> eventShortDtos = compilation.getEvents().stream().map(eventMapper::toEventShortDtoFromEvent).toList();
-
-        log.info("{}.{}: Mapping compilations to CompilationDto", colorizeClass("CompilationService"), colorizeMethod("getCompilationById()"));
         CompilationDto compilationDto = compilationMapper.toCompilationDtoFromCompilation(compilation, eventShortDtos);
-
-        log.info("{}.{}: Successfully fetched compilation with id={}.", colorizeClass("CompilationService"), colorizeMethod("getCompilationById()"), compId);
+        log.info("Группа по идентификатору получена");
         return compilationDto;
     }
 
@@ -89,58 +72,38 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     @Transactional
     public CompilationDto create(NewCompilationDto newCompilationDto) {
-        log.info("{}: Starting execution of {} method.", colorizeClass("CompilationService"), colorizeMethod("create()"));
+        log.info("Запрос на создание группы");
         Set<Event> events = new HashSet<>();
-
         if (newCompilationDto.getEvents() != null) {
-            log.info("{}.{}: Fetching events by ids={}.", colorizeClass("CompilationService"), colorizeMethod("create()"), newCompilationDto.getEvents());
             events.addAll(eventRepository.findAllById(newCompilationDto.getEvents()));
         }
-
-        log.info("{}.{}: Mapping newCompilationDto to Compilation.", colorizeClass("CompilationService"), colorizeMethod("create()"));
         Compilation compilation = compilationMapper.toCompilationFromNewCompilationDto(newCompilationDto, events);
-
-        log.info("{}.{}: Saving compilation to database.", colorizeClass("CompilationService"), colorizeMethod("create()"));
         compilation = compilationRepository.save(compilation);
-
-        log.info("{}.{}: Mapping event to EventShortDto", colorizeClass("CompilationService"), colorizeMethod("create()"));
         List<EventShortDto> eventShortDtos = compilation.getEvents().stream().map(eventMapper::toEventShortDtoFromEvent).toList();
-
-        log.info("{}.{}: Mapping compilations to CompilationDto", colorizeClass("CompilationService"), colorizeMethod("create()"));
         CompilationDto compilationDto = compilationMapper.toCompilationDtoFromCompilation(compilation, eventShortDtos);
-
-        log.info("{}.{}: Successfully created compilation with id={}", colorizeClass("CompilationService"), colorizeMethod("create()"), compilation.getId());
+        log.info("Группа создана");
         return compilationDto;
     }
 
     @Override
     @Transactional
     public void deleteById(Long compId) {
-        log.info("{}: Starting execution of {} method.", colorizeClass("CompilationService"), colorizeMethod("deleteById()"));
-
-        log.info("{}.{}: Checking if compilation exists with id={}.", colorizeClass("CompilationService"), colorizeMethod("deleteById()"), compId);
+        log.info("Запрос на удаление группы по идентификатору");
         if (!compilationRepository.existsById(compId)) {
             throw new NotFoundException(
-                    String.format("Compilation with id=%d not found", compId));
+                    String.format("Группа не найдена", compId));
         }
-        log.info("{}.{}: Deleting compilation with id={}.", colorizeClass("CompilationService"), colorizeMethod("deleteById()"), compId);
         compilationRepository.deleteById(compId);
-
-        log.info("{}.{}: Compilation with id={} deleted successfully.", colorizeClass("UserService"), colorizeMethod("deleteById()"), compId);
+        log.info("Группа по идентификатору удалена");
     }
 
     @Override
     @Transactional
     public CompilationDto update(Long compId, UpdateCompilationRequest updateCompilationRequest) {
-        log.info("{}: Starting execution of {} method.", colorizeClass("CompilationService"), colorizeMethod("update()"));
-
-        log.info("{}.{}: Fetching compilation with id={}.", colorizeClass("CompilationService"), colorizeMethod("update()"), compId);
+        log.info("Запрос на изменение группы");
         Compilation compilation = compilationRepository.findById(compId)
-                .orElseThrow(() -> new NotFoundException(String.format("Compilation with id=%d not found", compId)));
-
-        log.info("{}.{}: Beginning updating the fields.", colorizeClass("CompilationService"), colorizeMethod("update()"));
+                .orElseThrow(() -> new NotFoundException(String.format("Группа не найдена", compId)));
         StringBuilder updatedFieldsLog = new StringBuilder();
-
         if (updateCompilationRequest.getTitle() != null) {
             compilation.setTitle(updateCompilationRequest.getTitle());
             updatedFieldsLog.append("Title|");
@@ -154,21 +117,12 @@ public class CompilationServiceImpl implements CompilationService {
             compilation.setPinned(updateCompilationRequest.getPinned());
             updatedFieldsLog.append("Pinned|");
         }
-
         String updatedFields = updatedFieldsLog.toString().replaceAll("\\|$", "").replace("|", ", ");
-
-        log.info("{}.{}: Updated fields: {}.", colorizeClass("CompilationService"), colorizeMethod("update()"), updatedFields);
-
-        log.info("{}.{}: Saving updated compilation to database", colorizeClass("CompilationService"), colorizeMethod("update()"));
         compilation = compilationRepository.save(compilation);
-
-        log.info("{}.{}: Mapping event to EventShortDto", colorizeClass("CompilationService"), colorizeMethod("update()"));
-        log.info("{}.{}: Mapping compilations to CompilationDto", colorizeClass("CompilationService"), colorizeMethod("update()"));
         CompilationDto compilationDto = compilationMapper.toCompilationDtoFromCompilation(compilation, compilation.getEvents().stream()
                 .map(eventMapper::toEventShortDtoFromEvent)
                 .toList());
-
-        log.info("{}.{}: Successfully updated compilation with id={}", colorizeClass("CompilationService"), colorizeMethod("update()"), compId);
+        log.info("Группа изменена");
         return compilationDto;
     }
 }

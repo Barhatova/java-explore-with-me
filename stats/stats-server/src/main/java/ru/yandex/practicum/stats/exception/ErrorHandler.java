@@ -10,8 +10,8 @@ import ru.yandex.practicum.stats.controller.StatsController;
 public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleBadRequestException(final BadRequestException e) {
-        return new ApiError(HttpStatus.BAD_REQUEST,
+    public ErrorResponse handleBadRequestException(final BadRequestException e) {
+        return new ErrorResponse(HttpStatus.BAD_REQUEST,
                 "Incorrectly made request.",
                 e.getMessage());
     }

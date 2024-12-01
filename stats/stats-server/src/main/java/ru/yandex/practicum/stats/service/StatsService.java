@@ -1,13 +1,16 @@
 package ru.yandex.practicum.stats.service;
 
-import ru.yandex.practicum.dto.EndpointHitDto;
-import ru.yandex.practicum.dto.ViewStatsDto;
+import ru.yandex.practicum.dto.ParamHitDto;
+import ru.yandex.practicum.dto.StatDto;
+import ru.yandex.practicum.stats.model.Stat;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface StatsService {
-    void create(EndpointHitDto endpointHitDto);
+    void createStat(ParamHitDto stat);
 
-    List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique);
+    List<StatDto> groupStat(List<Stat> stats, boolean unique);
+
+    List<StatDto> getStat(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique);
 }
