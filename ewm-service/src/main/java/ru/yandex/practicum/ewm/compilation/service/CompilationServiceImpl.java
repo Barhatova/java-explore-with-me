@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.dto.StatDto;
 import ru.yandex.practicum.ewm.compilation.dto.CompilationDto;
 import ru.yandex.practicum.ewm.compilation.dto.NewCompilationDto;
 import ru.yandex.practicum.ewm.compilation.dto.UpdateCompilationRequest;
@@ -18,12 +19,16 @@ import ru.yandex.practicum.ewm.event.dto.EventShortDto;
 import ru.yandex.practicum.ewm.event.mapper.EventMapper;
 import ru.yandex.practicum.ewm.event.model.Event;
 import ru.yandex.practicum.ewm.event.repository.EventRepository;
+import ru.yandex.practicum.ewm.event.service.EventService;
 import ru.yandex.practicum.ewm.exception.NotFoundException;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import static org.hibernate.type.descriptor.java.JdbcDateJavaType.DATE_FORMAT;
 import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeClass;
 import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeMethod;
 
@@ -87,7 +92,6 @@ public class CompilationServiceImpl implements CompilationService {
         log.info("{}.{}: Successfully fetched compilation with id={}.", colorizeClass("CompilationService"), colorizeMethod("getCompilationById()"), compId);
         return compilationDto;
     }
-
 
     @Override
     @Transactional

@@ -14,21 +14,19 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Compilation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
     @Column(nullable = false)
-    String title;
-    @ManyToMany
+    private String title;
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "compilation_events",
             joinColumns = @JoinColumn(name = "compilation_id"),
             inverseJoinColumns = @JoinColumn(name = "event_id")
     )
-    Set<Event> events;
+    private Set<Event> events;
     @Column(nullable = false)
-    boolean pinned;
-
+    private boolean pinned;
 }
