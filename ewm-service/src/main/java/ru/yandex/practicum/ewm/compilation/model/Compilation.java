@@ -2,7 +2,6 @@ package ru.yandex.practicum.ewm.compilation.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
 import ru.yandex.practicum.ewm.event.model.Event;
 
 import java.util.Set;
