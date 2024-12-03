@@ -19,7 +19,7 @@ public class Compilation {
     private Long id;
     @Column(nullable = false)
     private String title;
-    @OneToMany(fetch = FetchType.LAZY)
+    @ManyToMany
     @JoinTable(
             name = "compilation_events",
             joinColumns = @JoinColumn(name = "compilation_id"),
