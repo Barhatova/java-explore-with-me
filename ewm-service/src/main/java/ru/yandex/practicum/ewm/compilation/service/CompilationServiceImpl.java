@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -43,27 +44,29 @@ public class CompilationServiceImpl implements CompilationService {
         log.info("{}: Starting execution of {} method.", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
 
         Pageable pageable = PageRequest.of(from / size, size);
-        List<Compilation> compilations;
+        Page<Compilation> compilationsPage;
 
         if (pinned != null) {
             log.info("{}.{}: Fetching compilations with pinned status: pinned={}", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"), pinned);
-            compilations = compilationRepository.findAllByPinned(pinned, pageable).getContent();
+            compilationsPage = compilationRepository.findAllByPinned(pinned, pageable);
         } else {
             log.info("{}.{}: Fetching all compilations.", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
-            compilations = compilationRepository.findAll(pageable).getContent();
+            compilationsPage = compilationRepository.findAll(pageable);
         }
 
-        if (compilations.isEmpty()) {
+        if (compilationsPage.isEmpty()) {
             log.info("{}.{}: No compilations found. Returning an empty list.", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
             return List.of();
         }
 
         log.info("{}.{}: Mapping compilation to CompilationDto", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
-        List<CompilationDto> compilationDtos = compilations.stream()
+        List<CompilationDto> compilationDtos = compilationsPage.getContent().stream()
                 .map(compilation -> {
                     log.info("{}.{}: Mapping event to EventShortDto", colorizeClass("CompilationService"), colorizeMethod("getCompilations()"));
                     List<EventShortDto> eventShortDtos = compilation.getEvents().stream().map(eventMapper::toEventShortDtoFromEvent).toList();
-                    return compilationMapper.toCompilationDtoFromCompilation(compilation, eventShortDtos);
+                    return compilationMapper.toCompilationDtoFromCompilation(compilation, compilation.getEvents().stream()
+                            .map(eventMapper::toEventShortDtoFromEvent)
+                            .toList());
                 })
                 .toList();
 

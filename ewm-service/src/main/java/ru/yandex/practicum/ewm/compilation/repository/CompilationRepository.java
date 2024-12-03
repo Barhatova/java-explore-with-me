@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import ru.yandex.practicum.ewm.compilation.model.Compilation;
 
 public interface CompilationRepository extends JpaRepository<Compilation, Long> {
-    @Query(" select с " +
-            "from Compilation c " +
-            "JOIN FETCH c.events")
+
     Page<Compilation> findAllByPinned(boolean pinned, Pageable pageable);
+
+    Page<Compilation> findAll(Pageable pageable);
 }
