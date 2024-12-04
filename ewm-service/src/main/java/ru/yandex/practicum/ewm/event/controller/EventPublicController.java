@@ -1,9 +1,7 @@
 package ru.yandex.practicum.ewm.event.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.ewm.event.dto.EventFullDto;
