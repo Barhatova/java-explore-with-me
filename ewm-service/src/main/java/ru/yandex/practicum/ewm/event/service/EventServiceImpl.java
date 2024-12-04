@@ -17,8 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.client.StatsClient;
-import ru.yandex.practicum.dto.ParamHitDto;
-import ru.yandex.practicum.dto.StatDto;
+import ru.yandex.practicum.dto.EndpointHitDto;
+import ru.yandex.practicum.dto.ViewStatsDto;
 import ru.yandex.practicum.ewm.category.model.Category;
 import ru.yandex.practicum.ewm.category.repository.CategoryRepository;
 import ru.yandex.practicum.ewm.event.dto.*;
@@ -552,7 +552,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private void sendStatisticalData(HttpServletRequest request) {
-        ParamHitDto stat = ParamHitDto.builder()
+        EndpointHitDto stat = EndpointHitDto.builder()
                 .app(serviceId)
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
@@ -562,12 +562,12 @@ public class EventServiceImpl implements EventService {
         statsClient.create(stat);
     }
 
-    private List<StatDto> convertResponseToList(ResponseEntity<Object> response) {
+    private List<ViewStatsDto> convertResponseToList(ResponseEntity<Object> response) {
         if (response.getBody() == null) {
             return List.of();
         }
         try {
-            return objectMapper.convertValue(response.getBody(), new TypeReference<List<StatDto>>() {
+            return objectMapper.convertValue(response.getBody(), new TypeReference<List<ViewStatsDto>>() {
             });
         } catch (Exception e) {
             throw new RuntimeException("Failed to convert response to list", e);
@@ -581,10 +581,10 @@ public class EventServiceImpl implements EventService {
         String endDate = LocalDateTime.now().format(formatter);
         List<String> uris = List.of(uri);
 
-        List<StatDto> stats = convertResponseToList(statsClient.getStats(startDate, endDate, uris, true));
+        List<ViewStatsDto> stats = convertResponseToList(statsClient.getStats(startDate, endDate, uris, true));
 
         return stats.isEmpty()
                 ? 0L
-                : stats.stream().mapToLong(StatDto::getHits).sum();
+                : stats.stream().mapToLong(ViewStatsDto::getHits).sum();
     }
 }

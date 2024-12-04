@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ParamHitDto {
+public class EndpointHitDto {
     String app;
     String uri;
     String ip;
