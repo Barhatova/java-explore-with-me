@@ -10,13 +10,9 @@ import ru.yandex.practicum.stats.controller.StatsController;
 public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(final ValidationException e) {
-        return new ErrorResponse("Ошибка валидации", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFoundException(NotFoundException e) {
-        return new ErrorResponse("Не найдено", e.getMessage());
+    public ApiError handleBadRequestException(final BadRequestException e) {
+        return new ApiError(HttpStatus.BAD_REQUEST,
+                "Incorrectly made request.",
+                e.getMessage());
     }
 }

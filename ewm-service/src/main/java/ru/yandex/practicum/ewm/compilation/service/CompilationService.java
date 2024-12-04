@@ -1,0 +1,19 @@
+package ru.yandex.practicum.ewm.compilation.service;
+
+import ru.yandex.practicum.ewm.compilation.dto.CompilationDto;
+import ru.yandex.practicum.ewm.compilation.dto.NewCompilationDto;
+import ru.yandex.practicum.ewm.compilation.dto.UpdateCompilationRequest;
+
+import java.util.List;
+
+public interface CompilationService {
+    List<CompilationDto> getCompilations(Boolean pinned, int from, int size);
+
+    CompilationDto getCompilationById(Long compId);
+
+    CompilationDto create(NewCompilationDto newCompilationDto);
+
+    void deleteById(Long compId);
+
+    CompilationDto update(Long compId, UpdateCompilationRequest updateCompilationRequest);
+}
