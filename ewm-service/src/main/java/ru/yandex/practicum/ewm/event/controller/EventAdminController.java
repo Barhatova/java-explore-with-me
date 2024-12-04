@@ -1,9 +1,7 @@
 package ru.yandex.practicum.ewm.event.controller;
 
 import jakarta.validation.Valid;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.ewm.event.dto.EventFullDto;
@@ -17,9 +15,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/events")
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventAdminController {
-    final EventService eventService;
+    public static final String EVENT_ID = "event-id";
+    private final EventService eventService;
 
     @GetMapping
     public List<EventFullDto> getFullEvents(@RequestParam(required = false) List<Long> users,
@@ -38,8 +36,8 @@ public class EventAdminController {
                 size);
     }
 
-    @PatchMapping("/{event-id}")
-    public EventFullDto updateByAdmin(@PathVariable("event-id") Long eventId,
+    @PatchMapping("/{" + EVENT_ID + "}")
+    public EventFullDto updateByAdmin(@PathVariable(EVENT_ID) Long eventId,
                                       @Valid @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
         return eventService.updateByAdmin(eventId, updateEventAdminRequest);
     }

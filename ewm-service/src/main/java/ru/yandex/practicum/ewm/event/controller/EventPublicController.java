@@ -17,9 +17,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/events")
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventPublicController {
-    final EventService eventService;
+    public static final String EVENT_ID = "event-id";
+    private final EventService eventService;
 
     @GetMapping
     public List<EventShortDto> getEvents(@RequestParam(required = false) String text,
@@ -44,8 +44,8 @@ public class EventPublicController {
                 request);
     }
 
-    @GetMapping("/{event-id}")
-    public EventFullDto getEventById(@PathVariable("event-id") Long eventId, HttpServletRequest request) {
+    @GetMapping("/{" + EVENT_ID + "}")
+    public EventFullDto getEventById(@PathVariable(EVENT_ID) Long eventId, HttpServletRequest request) {
         return eventService.getEventById(eventId, request);
     }
 }

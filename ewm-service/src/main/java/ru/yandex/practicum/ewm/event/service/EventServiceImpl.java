@@ -51,16 +51,16 @@ import static ru.yandex.practicum.ewm.util.LogColorizeUtil.colorizeMethod;
 @Transactional(readOnly = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventServiceImpl implements EventService {
-    final EventRepository eventRepository;
-    final UserRepository userRepository;
-    final CategoryRepository categoryRepository;
-    final RequestRepository requestRepository;
-    final StatsClient statsClient;
-    final EventMapper eventMapper;
-    final RequestMapper requestMapper;
-    final ObjectMapper objectMapper;
+    private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
+    private final RequestRepository requestRepository;
+    private final StatsClient statsClient;
+    private final EventMapper eventMapper;
+    private final RequestMapper requestMapper;
+    private final ObjectMapper objectMapper;
     @Value("${spring.application.name}")
-    String serviceId;
+    private String serviceId;
 
     @Override
     @Transactional
@@ -81,7 +81,7 @@ public class EventServiceImpl implements EventService {
                 throw new BadRequestException("rangeEnd cannot be before rangeStart");
             }
         }
-        Specification<Event> spec = getPublicFilters(text, categories, paid, rangeStart, rangeEnd, onlyAvailable);
+        Specification<Event> spec = getPublicFilters(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort);
         Sort sorting = Sort.by("eventDate");
 
         if (sort != null) {
@@ -90,6 +90,8 @@ public class EventServiceImpl implements EventService {
                 sorting = Sort.by("eventDate");
             } else if (sort == SortType.VIEWS) {
                 sorting = Sort.by("views");
+            } else if (sort == SortType.RATING) {
+                sorting = Sort.by("rating").descending();
             }
         }
 
@@ -135,7 +137,7 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d not found", eventId)));
 
-        if (event.getState() != State.PUBLISHED) {
+        if (event.getState() == State.CANCELED || event.getState() == State.PENDING) {
             throw new NotFoundException(String.format("Event with id=%d not found", eventId));
         }
 
@@ -360,6 +362,7 @@ public class EventServiceImpl implements EventService {
         return fullDto;
     }
 
+
     @Override
     @Transactional
     public EventFullDto updateByCurrentUser(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
@@ -423,6 +426,9 @@ public class EventServiceImpl implements EventService {
             }
             if (updateEventUserRequest.getStateAction().equals(StateUser.CANCEL_REVIEW) && event.getState().equals(State.PENDING)) {
                 event.setState(State.CANCELED);
+            }
+            if (updateEventUserRequest.getStateAction().equals(StateUser.COMPLETED_EVENT)) {
+                event.setState(State.COMPLETED);
             }
             updatedFieldsLog.append("StateAction|");
         }

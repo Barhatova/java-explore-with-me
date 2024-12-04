@@ -7,9 +7,9 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Embeddable
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Location {
     Float lat;
     Float lon;

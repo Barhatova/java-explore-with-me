@@ -13,7 +13,7 @@ services:
     image: postgres:16.1
     container_name: ewm-stat-db
     ports:
-      - "6542:5432"
+      - "5431:5432"
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=user
@@ -38,7 +38,7 @@ services:
     image: postgres:16.1
     container_name: ewm-db
     ports:
-      - "6541:5432"
+      - "5430:5432"
     environment:
       - POSTGRES_DB=postgres2
       - POSTGRES_USER=user2

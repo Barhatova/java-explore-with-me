@@ -1,9 +1,7 @@
 package ru.yandex.practicum.ewm.compilation.controller;
 
 import jakarta.validation.Valid;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.ewm.compilation.dto.CompilationDto;
@@ -14,9 +12,9 @@ import ru.yandex.practicum.ewm.compilation.service.CompilationService;
 @RestController
 @RequestMapping("admin/compilations")
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CompilationAdminController {
-    final CompilationService compilationService;
+    public static final String COMP_ID = "comp-id";
+    private final CompilationService compilationService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -24,14 +22,14 @@ public class CompilationAdminController {
         return compilationService.create(newCompilationDto);
     }
 
-    @DeleteMapping("/{comp-id}")
+    @DeleteMapping("/{" + COMP_ID + "}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@PathVariable("comp-id") Long compId) {
+    public void deleteById(@PathVariable(COMP_ID) Long compId) {
         compilationService.deleteById(compId);
     }
 
-    @PatchMapping("/{comp-id}")
-    public CompilationDto update(@PathVariable("comp-id") Long compId,
+    @PatchMapping("/{" + COMP_ID + "}")
+    public CompilationDto update(@PathVariable(COMP_ID) Long compId,
                                  @Valid @RequestBody UpdateCompilationRequest updateCompilationRequest) {
         return compilationService.update(compId, updateCompilationRequest);
     }

@@ -15,21 +15,23 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RequestPrivateController {
-    final RequestService requestService;
+    public static final String USER_ID = "user-id";
+    public static final String REQUEST_ID = "request-id";
+    private final RequestService requestService;
 
     @GetMapping
-    public List<ParticipationRequestDto> getRequests(@PathVariable("user-id") Long userId) {
+    public List<ParticipationRequestDto> getRequests(@PathVariable(USER_ID) Long userId) {
         return requestService.getRequests(userId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ParticipationRequestDto create(@PathVariable("user-id") Long userId, @RequestParam Long eventId) {
+    public ParticipationRequestDto create(@PathVariable(USER_ID) Long userId, @RequestParam Long eventId) {
         return requestService.create(userId, eventId);
     }
 
-    @PatchMapping("/{request-id}/cancel")
-    public ParticipationRequestDto cancel(@PathVariable("user-id") Long userId, @PathVariable("request-id") Long requestId) {
+    @PatchMapping("/{" + REQUEST_ID + "}/cancel")
+    public ParticipationRequestDto cancel(@PathVariable(USER_ID) Long userId, @PathVariable(REQUEST_ID) Long requestId) {
         return requestService.cancel(userId, requestId);
     }
 }
