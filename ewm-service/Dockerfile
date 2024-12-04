@@ -1,4 +1,4 @@
 FROM amazoncorretto:21
-COPY target/*.jar app.jar
+COPY target/*.jar ewm-service.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java","-jar","/ewm-service.jar"]
