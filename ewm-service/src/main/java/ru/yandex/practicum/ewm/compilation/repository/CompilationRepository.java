@@ -8,6 +8,5 @@ import ru.yandex.practicum.ewm.compilation.model.Compilation;
 
 public interface CompilationRepository extends JpaRepository<Compilation, Long> {
 
-    @Query("SELECT c FROM Compilation c JOIN FETCH c.events")
     Page<Compilation> findAllByPinned(boolean pinned, Pageable pageable);
 }
