@@ -1,9 +1,7 @@
 package ru.yandex.practicum.ewm.user.controller;
 
 import jakarta.validation.Valid;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.ewm.user.dto.UserDto;
 import ru.yandex.practicum.ewm.user.service.UserService;
@@ -16,9 +14,9 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 @RestController
 @RequestMapping("/admin/users")
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserAdminController {
-    final UserService userService;
+    public static final String USER_ID = "user-id";
+    private final UserService userService;
 
     @PostMapping
     @ResponseStatus(CREATED)
@@ -33,9 +31,9 @@ public class UserAdminController {
         return userService.findAll(ids, from, size);
     }
 
-    @DeleteMapping("/{user-id}")
+    @DeleteMapping("/{" + USER_ID + "}")
     @ResponseStatus(NO_CONTENT)
-    public void delete(@PathVariable("user-id") Long userId) {
+    public void delete(@PathVariable(USER_ID) Long userId) {
         userService.deleteById(userId);
     }
 }

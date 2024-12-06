@@ -1,10 +1,11 @@
 package ru.yandex.practicum.ewm.event.specification;
 
 import jakarta.persistence.criteria.Predicate;
-import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import ru.yandex.practicum.ewm.event.model.Event;
+import ru.yandex.practicum.ewm.event.model.SortType;
 import ru.yandex.practicum.ewm.event.model.State;
 
 import java.time.LocalDateTime;
@@ -46,6 +47,10 @@ public class EventSpecification {
         return (root, query, builder) -> builder.equal(root.get("state"), State.PUBLISHED);
     }
 
+    public static Specification<Event> onlyCompleted() {
+        return (root, query, builder) -> builder.equal(root.get("state"), State.COMPLETED);
+    }
+
     public static Specification<Event> searchText(String text) {
         return (root, query, builder) -> {
             if (text == null || text.isEmpty()) {
@@ -84,13 +89,18 @@ public class EventSpecification {
                 .and(beforeRangeEnd(rangeEnd));
     }
 
-    public static Specification<Event> getPublicFilters(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, Boolean onlyAvailable) {
+    public static Specification<Event> getPublicFilters(String text,
+                                                        List<Long> categories,
+                                                        Boolean paid,
+                                                        LocalDateTime rangeStart,
+                                                        LocalDateTime rangeEnd,
+                                                        Boolean onlyAvailable,
+                                                        SortType sortType) {
         LocalDateTime now = LocalDateTime.now();
 
-        return Specification.where(onlyPublished())
+        return Specification.where(sortType == null || !sortType.equals(SortType.RATING) ? onlyPublished() : onlyCompleted())
                 .and(searchText(text))
                 .and(hasCategories(categories))
-                .and(onlyPublished())
                 .and(isPaid(paid))
                 .and(rangeStart != null ? afterRangeStart(rangeStart) : afterRangeStart(now))
                 .and(beforeRangeEnd(rangeEnd))

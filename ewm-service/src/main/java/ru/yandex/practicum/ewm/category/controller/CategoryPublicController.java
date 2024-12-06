@@ -1,8 +1,6 @@
 package ru.yandex.practicum.ewm.category.controller;
 
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.ewm.category.dto.CategoryDto;
 import ru.yandex.practicum.ewm.category.service.CategoryService;
@@ -12,9 +10,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryPublicController {
-    final CategoryService categoryService;
+    public static final String CAT_ID = "cat-id";
+    private final CategoryService categoryService;
 
     @GetMapping
     public List<CategoryDto> getCategories(
@@ -23,8 +21,8 @@ public class CategoryPublicController {
         return categoryService.getCategories(from, size);
     }
 
-    @GetMapping("/{cat-id}")
-    public CategoryDto getCategoryById(@PathVariable("cat-id") Long catId) {
+    @GetMapping("/{" + CAT_ID + "}")
+    public CategoryDto getCategoryById(@PathVariable(CAT_ID) Long catId) {
         return categoryService.getCategoryById(catId);
     }
 }

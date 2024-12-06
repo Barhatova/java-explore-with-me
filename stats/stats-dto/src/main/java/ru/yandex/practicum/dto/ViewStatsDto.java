@@ -8,8 +8,8 @@ import lombok.experimental.FieldDefaults;
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class StatDto {
+public class ViewStatsDto {
     String app;
     String uri;
-    Long hits;
+    Integer hits;
 }

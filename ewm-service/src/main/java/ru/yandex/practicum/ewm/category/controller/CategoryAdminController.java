@@ -1,9 +1,7 @@
 package ru.yandex.practicum.ewm.category.controller;
 
 import jakarta.validation.Valid;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.ewm.category.dto.CategoryDto;
@@ -13,9 +11,9 @@ import ru.yandex.practicum.ewm.category.service.CategoryService;
 @RestController
 @RequestMapping("/admin/categories")
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryAdminController {
-    final CategoryService categoryService;
+    public static final String CAT_ID = "cat-id";
+    private final CategoryService categoryService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -23,14 +21,14 @@ public class CategoryAdminController {
         return categoryService.create(newCategoryDto);
     }
 
-    @DeleteMapping("/{cat-id}")
+    @DeleteMapping("/{" + CAT_ID + "}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable("cat-id") Long catId) {
+    public void delete(@PathVariable(CAT_ID) Long catId) {
         categoryService.delete(catId);
     }
 
-    @PatchMapping("/{cat-id}")
-    public CategoryDto update(@PathVariable("cat-id") Long catId, @Valid @RequestBody CategoryDto categoryDto) {
+    @PatchMapping("/{" + CAT_ID + "}")
+    public CategoryDto update(@PathVariable(CAT_ID) Long catId, @Valid @RequestBody CategoryDto categoryDto) {
         return categoryService.update(catId, categoryDto);
     }
 }

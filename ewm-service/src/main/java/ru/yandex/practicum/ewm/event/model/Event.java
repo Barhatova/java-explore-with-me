@@ -54,4 +54,5 @@ public class Event {
     @Column(nullable = false, length = 120)
     String title;
     Long views;
+    Double rating;
 }
